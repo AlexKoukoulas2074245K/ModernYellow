@@ -16,6 +16,7 @@
 #include "gstates/gsplay.h"
 #include "mydef.h"
 #include "sinputhandler.h"
+#include "resources/textureresource.h"
 
 using std::string;
 
@@ -126,9 +127,14 @@ int main(int argc, char** argv)
         gstates.front()->update();        
         
         // State rendering
-        SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
+        SDL_SetRenderDrawColor(g_renderer, 
+                               RED(envcolors::EC_WHITE),
+                               GREEN(envcolors::EC_WHITE), 
+                               BLUE(envcolors::EC_WHITE),
+                               ALPHA(envcolors::EC_WHITE));
+
         SDL_RenderClear(g_renderer);
-        gstates.front()->render();
+        gstates.front()->render();        
         SDL_RenderPresent(g_renderer);
 
         // Input frame end

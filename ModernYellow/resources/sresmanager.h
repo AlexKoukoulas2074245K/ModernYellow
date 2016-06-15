@@ -37,8 +37,9 @@ public:
     /* Attempts to retrieve and return a resource with the given name. a nullptr will
        be returned in the case of failure. Subsequent attemtps to retrieve the same resource
        will yield faster performance due to resource caching */
-    shared_ptr<Resource> loadResource(const string& resourceName,
-                                      const ResourceType resourceType);
+    shared_ptr<Resource> loadResource(
+        const string& resourceName,
+        const ResourceType resourceType);
 
     /* Returns the number of cached resources with the given name (should be 1 or 0 normally) */
     int isResourceCached(const string& resourceName) const;
