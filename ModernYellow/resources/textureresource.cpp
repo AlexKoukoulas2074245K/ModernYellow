@@ -10,6 +10,30 @@
 extern string g_texPath;
 extern SDL_Renderer* g_renderer;
 
+/* Color Masks */
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    #define RMASK 0xff000000
+    #define GMASK 0x00ff0000
+    #define BMASK 0x0000ff00
+    #define AMASK 0x000000ff
+#else
+    #define RMASK 0x000000ff
+    #define GMASK 0x0000ff00
+    #define BMASK 0x00ff0000
+    #define AMASK 0xff000000
+#endif
+
+/* ==============
+   Static Methods
+   ============== */
+std::shared_ptr<TextureResource> TextureResource::createEmptyTexture(const uint32 width, const uint32 height)
+{
+    auto pTexRes = std::shared_ptr<TextureResource>(new TextureResource("empty"));
+    auto pSurface = SDL_CreateRGBSurface(0, width, height, 32, RMASK, GMASK, BMASK, AMASK);
+    pTexRes->getSurface() = pSurface_t(pSurface, SDL_FreeSurface);
+    return pTexRes;
+}
+
 /* ==============
    Public Methods
    ============== */

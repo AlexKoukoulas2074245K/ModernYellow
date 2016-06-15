@@ -6,7 +6,9 @@
 #pragma once
 
 #include "gstate.h"
+#include <memory>
 
+class Level;
 class GSPlay final: public GState
 {
 public:
@@ -18,5 +20,9 @@ public:
     void update() override;
 
     void render() override;
-    
+
+private:
+
+    std::unique_ptr<Level> m_level;
+
 };

@@ -75,6 +75,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="game\level.cpp" />
+    <ClCompile Include="game\tile.cpp" />
     <ClCompile Include="gstates\gsplay.cpp" />
     <ClCompile Include="gstates\gstate.cpp" />
     <ClCompile Include="main.cpp" />
@@ -86,6 +88,9 @@
     <ClCompile Include="sinputhandler.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="game\level.h" />
+    <ClInclude Include="game\tile.h" />
+    <ClInclude Include="strutils.h" />
     <ClInclude Include="gstates\gsplay.h" />
     <ClInclude Include="gstates\gstate.h" />
     <ClInclude Include="mydef.h" />

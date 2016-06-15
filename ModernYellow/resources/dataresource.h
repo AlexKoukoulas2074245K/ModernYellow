@@ -7,6 +7,7 @@
 
 #include "resource.h"
 #include <memory>
+#include <vector>
 
 class DataResource: public Resource
 {
@@ -15,7 +16,7 @@ public:
 
     bool load();
 
-    const string& getContent() const;
+    const std::vector<string>& getContent() const;
    
 private:
 
@@ -23,6 +24,6 @@ private:
 
 private:
 
-    string m_content;
+    std::vector<string> m_content;
 
 };

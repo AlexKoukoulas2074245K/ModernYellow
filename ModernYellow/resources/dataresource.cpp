@@ -5,7 +5,6 @@
 
 #include "dataresource.h"
 #include "../portcommon.h"
-#include <sstream>
 
 extern string g_datPath;
 
@@ -22,18 +21,17 @@ bool DataResource::load()
 
     // Create streams
     std::ifstream dataFile(g_datPath + m_name);
-    std::stringstream dataSS;
     
-    // Copy file contents to stringstream
-    dataSS << dataFile.rdbuf();
-
-    // Construct content from data stream
-    m_content = dataSS.str();
+    string line;    
+    while(std::getline(dataFile, line))
+    {
+        m_content.push_back(line);
+    }
 
     return true;
 }
 
-const string& DataResource::getContent() const
+const std::vector<string>& DataResource::getContent() const
 {
     return m_content;
 }

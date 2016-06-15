@@ -27,12 +27,12 @@ const uint32 gc_origWidth  = 160;
 const uint32 gc_origHeight = 144;
 
 // Global Paths
-string g_execPath      = "";
-string g_savePath      = "";
-string g_assetPath     = "../assets/";
-string g_configPath    = g_assetPath + "config.ini";
-string g_datPath       = g_assetPath + "dat/";
-string g_texPath       = g_assetPath + "tex/";
+string g_execPath   = "";
+string g_savePath   = "";
+string g_assetPath  = "../assets/";
+string g_configPath = g_assetPath + "config.ini";
+string g_datPath    = g_assetPath + "dat/";
+string g_texPath    = g_assetPath + "tex/";
 
 // Global game related variables
 uint32 g_fullscreen = 0;
@@ -153,6 +153,7 @@ int main(int argc, char** argv)
         if (secCounter > 1000)
         {
             // Extract per sec profiling info
+            SDL_SetWindowTitle(pWindow, std::to_string(fps).c_str());
             secCounter = 0;
             fps = 0;
         }       

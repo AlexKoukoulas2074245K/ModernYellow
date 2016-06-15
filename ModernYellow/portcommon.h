@@ -35,7 +35,7 @@ namespace file_util
     using std::string;
     using std::ifstream;
 
-    inline bool exists(const std::string filePath)
+    inline bool exists(const std::string& filePath)
     {
         std::ifstream file(filePath);        
         return file.good();

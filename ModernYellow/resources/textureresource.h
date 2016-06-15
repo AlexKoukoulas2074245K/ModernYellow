@@ -12,8 +12,13 @@
 struct SDL_Texture;
 struct SDL_Surface;
 class TextureResource: public Resource
-{    
+{        
     friend class SResManager;
+
+public:
+
+    static std::shared_ptr<TextureResource> createEmptyTexture(const uint32 width, const uint32 height);
+
 public:    
 
     using pTexture_t = std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>;

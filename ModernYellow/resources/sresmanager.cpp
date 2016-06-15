@@ -69,4 +69,5 @@ int SResManager::isResourceCached(const string& resourceName) const
    =============== */
 SResManager::SResManager()
 {
+    
 }
