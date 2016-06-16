@@ -17,7 +17,9 @@ class TextureResource: public Resource
 
 public:
 
-    static std::shared_ptr<TextureResource> createEmptyTexture(const uint32 width, const uint32 height);
+    static std::shared_ptr<TextureResource> createEmptyTexture(
+        const uint32 width, 
+        const uint32 height);
 
 public:    
 
@@ -37,6 +39,14 @@ public:
     /* Darkens the surface (and as the result the texture) one step */
     void darken();
 
+    std::shared_ptr<TextureResource> getSubTexture(
+        const uint32 x,
+        const uint32 y,
+        const uint32 width, 
+        const uint32 height) const;
+
+    std::shared_ptr<TextureResource> getHorFlippedTexture() const;
+
     const pTexture_t& getTexture() const;
 
     const pSurface_t& getSurface() const;
@@ -51,7 +61,10 @@ private:
 
     uint32 getPixelAt(const uint32 x, const uint32 y) const;
 
-    void setPixelAt(const uint32 rgb, const uint32 x, const uint32 y);    
+    void setPixelAt(
+        const uint32 rgb, 
+        const uint32 x,
+        const uint32 y);    
 
 private:
     

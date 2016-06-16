@@ -17,8 +17,8 @@ using uint16 = uint16_t;
 using uint32 = uint32_t;
 using uint64 = uint64_t;
 
-const uint8 GAME_COLS(10U);
-const uint8 GAME_ROWS(9U);
+const uint32 BITS_PER_PIXEL = 32U;
+const uint32 DEFAULT_TILE_SIZE = 16U;
 
 #define RED(col)   ((col >> 0)  & 0xFF)
 #define GREEN(col) ((col >> 8)  & 0xFF) 
@@ -39,3 +39,8 @@ namespace envcolors
     const uint32 EC_CINAB(0xFF4040F8);
     const uint32 EC_CAVES(0xFF0040B8);
 }
+
+enum Direction
+{
+    DIR_LEFT, DIR_RIGHT, DIR_UP, DIR_DOWN
+};

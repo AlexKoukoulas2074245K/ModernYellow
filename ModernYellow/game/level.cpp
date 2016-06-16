@@ -23,18 +23,24 @@ extern SDL_Renderer* g_renderer;
 /* ==============
    Public Methods
    ============== */
-Level::Level(const string& levelName):
+Level::Level(
+    const string& levelName,
+    const int32 xOffset /* 0 */,
+    const int32 yOffset /* 0 */):
+
     m_name(levelName),
     m_ready(false),
     m_rows(0),
-    m_cols(0)
+    m_cols(0),
+    m_xOffset(xOffset),
+    m_yOffset(yOffset)
 {    
     if (!loadLevelTex()) return;
     if (!readLevelData()) return;        
 
     // Calculate level area
-    m_levelArea.x = 0;
-    m_levelArea.y = 0;
+    m_levelArea.x = xOffset;
+    m_levelArea.y = yOffset;
     m_levelArea.w = m_levelTex->getSurface().get()->w * g_scale;
     m_levelArea.h = m_levelTex->getSurface().get()->h * g_scale;
     m_ready = true;
@@ -50,6 +56,17 @@ void Level::render() const
 bool Level::isReady() const
 {
     return m_ready;
+}
+
+void Level::setOffset(
+    const int32 xOffset /* 0 */, 
+    const int32 yOffset /* 0 */)
+{
+    m_xOffset = xOffset;
+    m_yOffset = yOffset;
+
+    m_levelArea.x = m_xOffset;
+    m_levelArea.y = m_yOffset;
 }
 
 /* ===============

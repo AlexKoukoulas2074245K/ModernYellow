@@ -42,6 +42,7 @@ uint32 g_vsync      = 1;
 uint32 g_sfxVol     = 1;
 uint32 g_musicVol   = 1;
 uint32 g_scale      = 1;
+uint32 g_tileSize   = 16;
 
 // Global Renderer
 SDL_Renderer* g_renderer;
@@ -128,10 +129,10 @@ int main(int argc, char** argv)
         
         // State rendering
         SDL_SetRenderDrawColor(g_renderer, 
-                               RED(envcolors::EC_WHITE),
-                               GREEN(envcolors::EC_WHITE), 
-                               BLUE(envcolors::EC_WHITE),
-                               ALPHA(envcolors::EC_WHITE));
+                               RED(envcolors::EC_BLACK),
+                               GREEN(envcolors::EC_BLACK), 
+                               BLUE(envcolors::EC_BLACK),
+                               ALPHA(envcolors::EC_BLACK));
 
         SDL_RenderClear(g_renderer);
         gstates.front()->render();        
@@ -189,4 +190,5 @@ static void calculateGameVars()
 {
     g_width  *= g_scale;
     g_height *= g_scale;
+    g_tileSize *= g_scale;
 }

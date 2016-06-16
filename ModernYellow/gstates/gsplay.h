@@ -9,6 +9,8 @@
 #include <memory>
 
 class Level;
+class TextureResource;
+class Sprite;
 class GSPlay final: public GState
 {
 public:
@@ -24,5 +26,6 @@ public:
 private:
 
     std::unique_ptr<Level> m_level;
-
+    std::unique_ptr<Sprite> m_player;
+  
 };

@@ -18,13 +18,20 @@ class Level final
 public:
     using tilemap_t = std::vector<std::vector<std::unique_ptr<Tile>>>;
 
-    explicit Level(const string& levelName);
+    explicit Level(
+        const string& levelName, 
+        const int32 xOffset = 0,
+        const int32 yOffset = 0);
     
     ~Level();
 
     void render() const;
 
     bool isReady() const;
+
+    void setOffset( 
+        const int32 xOffset = 0, 
+        const int32 yOffset = 0);
 
 private:
 
@@ -40,4 +47,5 @@ private:
     std::shared_ptr<TextureResource> m_levelTex;
     SDL_Rect m_levelArea;
     uint32 m_rows, m_cols;
+    int32 m_xOffset, m_yOffset;
 };

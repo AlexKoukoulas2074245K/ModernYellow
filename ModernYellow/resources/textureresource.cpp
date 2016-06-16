@@ -26,11 +26,27 @@ extern SDL_Renderer* g_renderer;
 /* ==============
    Static Methods
    ============== */
-std::shared_ptr<TextureResource> TextureResource::createEmptyTexture(const uint32 width, const uint32 height)
+std::shared_ptr<TextureResource> TextureResource::createEmptyTexture(
+    const uint32 width, 
+    const uint32 height)
 {
+    // Create an empty texture resource
     auto pTexRes = std::shared_ptr<TextureResource>(new TextureResource("empty"));
-    auto pSurface = SDL_CreateRGBSurface(0, width, height, 32, RMASK, GMASK, BMASK, AMASK);
+
+    // Create an SDL_Surface with the given attributes
+    auto pSurface = SDL_CreateRGBSurface(
+        0, 
+        width, 
+        height, 
+        BITS_PER_PIXEL, 
+        RMASK, 
+        GMASK, 
+        BMASK, 
+        AMASK);
+
+    // Set the surface of the result to the newly created surface
     pTexRes->getSurface() = pSurface_t(pSurface, SDL_FreeSurface);
+
     return pTexRes;
 }
 
@@ -124,6 +140,47 @@ void TextureResource::darken()
     }
 }
 
+std::shared_ptr<TextureResource> TextureResource::getSubTexture(
+    const uint32 x,
+    const uint32 y,
+    const uint32 width,
+    const uint32 height) const
+{
+    auto pTexRes = TextureResource::createEmptyTexture(
+        DEFAULT_TILE_SIZE,
+        DEFAULT_TILE_SIZE);
+
+    SDL_Rect texcoords{x, y, width, height};
+    SDL_BlitSurface(getSurface().get(), &texcoords, pTexRes->getSurface().get(), nullptr);
+
+    pTexRes->compileTexture();
+
+    return pTexRes;
+}
+
+std::shared_ptr<TextureResource> TextureResource::getHorFlippedTexture() const
+{
+    auto pTexRes = TextureResource::createEmptyTexture(m_surface->w, m_surface->h);
+
+    if (SDL_MUSTLOCK(pTexRes->getSurface().get())) SDL_LockSurface(pTexRes->getSurface().get());
+    if (SDL_MUSTLOCK(m_surface.get())) SDL_LockSurface(m_surface.get());
+
+    for (int y = 0; y < m_surface->h; ++y)
+    {
+        for (int x = 0; x < m_surface->w; ++x)
+        {
+            pTexRes->setPixelAt(getPixelAt(x, y), m_surface->w - 1 - x, y);
+        }
+    }
+
+    pTexRes->compileTexture();
+
+    if (SDL_MUSTLOCK(pTexRes->getSurface().get())) SDL_UnlockSurface(pTexRes->getSurface().get());
+    if (SDL_MUSTLOCK(m_surface.get())) SDL_UnlockSurface(m_surface.get());
+
+    return pTexRes;
+}
+
 const TextureResource::pTexture_t& TextureResource::getTexture() const
 {
     return m_texture;
@@ -192,7 +249,10 @@ uint32 TextureResource::getPixelAt(const uint32 x, const uint32 y) const
     }
 }
 
-void TextureResource::setPixelAt(const uint32 pixel, const uint32 x, const uint32 y)
+void TextureResource::setPixelAt(
+    const uint32 pixel, 
+    const uint32 x,
+    const uint32 y)
 { 
     int bpp = m_surface->format->BytesPerPixel;
     /* Here p is the address to the pixel we want to set */

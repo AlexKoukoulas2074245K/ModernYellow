@@ -15,9 +15,6 @@ enum TileType
 class Tile final
 {
 public:
-    static const uint32 DEFAULT_TILE_SIZE = 16U;
-
-public:
     
     explicit Tile(const uint32 col,
                   const uint32 row,
@@ -34,5 +31,4 @@ private:
     TileType m_tileType;
     uint32 m_col;
     uint32 m_row;    
-    uint32 m_tileSize;    
 };
