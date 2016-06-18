@@ -33,7 +33,7 @@ struct Sprite::spriteImpl
     
     std::shared_ptr<Tile> m_pCurrTile;
     std::shared_ptr<Tile> m_pNextTile;
-    std::shared_ptr<Level> m_pLevelRef;
+    std::shared_ptr<const Level> m_pLevelRef;
 
     uint32 m_xRendOffset, m_yRendOffset;    
     uint32 m_currFrame;
@@ -52,7 +52,7 @@ Sprite::Sprite(
     const uint32 texU,
     const uint32 texV,
     const std::shared_ptr<Tile> pInitTile,
-    const std::shared_ptr<Level> pLevelRef,
+    const std::shared_ptr<const Level> pLevelRef,
     const std::shared_ptr<TextureResource>& pAtlas):
 
     m_impl(std::make_unique<spriteImpl>())
@@ -108,7 +108,7 @@ void Sprite::tryMove(const Direction dir)
             case DIR_RIGHT: pNextTile = m_impl->m_pLevelRef->getTileRightOf(m_impl->m_pCurrTile); break;
             }
 
-            if (pNextTile->getTileType() == TT_FREE)
+            if (pNextTile->getTileType() != TT_SOLID)
             {
                 m_impl->m_currState = S_MOVING;
             }

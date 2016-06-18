@@ -31,7 +31,7 @@ public:
         const uint32 texU, 
         const uint32 texV,
         const std::shared_ptr<Tile> pInitTile,
-        const std::shared_ptr<Level> pLevelRef,
+        const std::shared_ptr<const Level> pLevelRef,
         const std::shared_ptr<TextureResource>& pAtlas);
 
     virtual ~Sprite();
@@ -84,6 +84,5 @@ protected:
 
     struct spriteImpl;
     std::unique_ptr<spriteImpl> m_impl;
-
 
 };
