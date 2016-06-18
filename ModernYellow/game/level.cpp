@@ -12,12 +12,14 @@
 #include "../strutils.h"
 #include <SDL_log.h>
 #include <SDL_render.h>
+#include <SDL_assert.h>
 
 #define CORRUPTED_LEVEL() {SDL_FORCE_DISPLAY_ERROR("Corrupted level file: " + m_name); return false;}
 
 extern string g_datPath;
 extern string g_texPath;
 extern uint32 g_scale;
+extern uint32 g_tileSize;
 extern SDL_Renderer* g_renderer;
 
 /* ==============
@@ -58,6 +60,52 @@ bool Level::isReady() const
     return m_ready;
 }
 
+std::shared_ptr<Tile> Level::getTileXY(
+    const int32 worldX,
+    const int32 worldY)
+{    
+    SDL_assert(
+        worldX >= 0 && 
+        worldX < m_levelArea.w &&
+        worldY >= 0 && 
+        worldY < m_levelArea.h);
+
+    return m_tilemap[worldY / g_tileSize][worldX / g_tileSize];
+}
+
+std::shared_ptr<Tile> Level::getTileRC(
+    const uint32 col,
+    const uint32 row)
+{
+    SDL_assert(
+        col >= 0 &&
+        col < m_cols &&
+        row >= 0 &&
+        row < m_rows);
+
+    return m_tilemap[row][col];
+}
+
+std::shared_ptr<Tile> Level::getTileLeftOf(const std::shared_ptr<Tile> tile)
+{
+    return getTileRC(tile->getCol() - 1, tile->getRow());
+}
+
+std::shared_ptr<Tile> Level::getTileRightOf(const std::shared_ptr<Tile> tile)
+{
+    return getTileRC(tile->getCol() + 1, tile->getRow());
+}
+
+std::shared_ptr<Tile> Level::getTileAbove(const std::shared_ptr<Tile> tile)
+{
+    return getTileRC(tile->getCol(), tile->getRow() - 1);
+}
+
+std::shared_ptr<Tile> Level::getTileBelow(const std::shared_ptr<Tile> tile)
+{
+    return getTileRC(tile->getCol(), tile->getRow() + 1);
+}
+
 void Level::setOffset(
     const int32 xOffset /* 0 */, 
     const int32 yOffset /* 0 */)
@@ -91,7 +139,7 @@ bool Level::readLevelData()
     m_cols = std::atoi(comps[0].c_str());
     m_rows = std::atoi(comps[1].c_str());
 
-    m_tilemap.push_back(std::vector<std::unique_ptr<Tile>>(m_cols));
+    m_tilemap.push_back(std::vector<std::shared_ptr<Tile>>(m_cols));
     uint32 rowIndex = 0;
     uint32 colIndex = 0;
 
@@ -116,7 +164,7 @@ bool Level::readLevelData()
         {
             colIndex = 0;
             rowIndex++;
-            m_tilemap.push_back(std::vector<std::unique_ptr<Tile>>(m_cols));
+            m_tilemap.push_back(std::vector<std::shared_ptr<Tile>>(m_cols));
         }
     }
 

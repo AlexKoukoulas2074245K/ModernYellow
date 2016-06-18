@@ -4,6 +4,7 @@
    ====================== */
 
 #include "tile.h"
+#include <SDL_log.h>
 
 extern uint32 g_tileSize;
 
@@ -20,17 +21,34 @@ Tile::Tile(
 
 Tile::~Tile() = default;
 
+bool Tile::operator == (const Tile& rhs)
+{
+    SDL_Log("Called operator ==");
+    return getCol() == rhs.getCol() && 
+           getRow() == rhs.getRow();
+}
+
 TileType Tile::getTileType() const
 {
     return m_tileType;
 }
 
-SDL_Rect Tile::getTileRect() const
+int32 Tile::getX() const
 {
-    SDL_Rect rect;
-    rect.x = m_col * g_tileSize;
-    rect.y = m_row * g_tileSize;
-    rect.w = g_tileSize;
-    rect.h = g_tileSize;
-    return rect;
+    return m_col * g_tileSize;
+}
+
+int32 Tile::getY() const
+{
+    return m_row * g_tileSize;
+}
+
+uint32 Tile::getRow() const
+{
+    return m_row;
+}
+
+uint32 Tile::getCol() const
+{
+    return m_col;
 }

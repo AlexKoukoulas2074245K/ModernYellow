@@ -5,12 +5,6 @@
 
 #include "sinputhandler.h"
 
-/* ============================
-   Internal Function Signatures
-   ============================ */
-static uint16 translateSDLKey(const SDL_Keycode sdlKey);
-
-
 /* =====================
    Public Static Methods
    ===================== */
@@ -31,7 +25,7 @@ void SInputHandler::update(const SDL_Event& event)
         
         case SDL_KEYDOWN: 
         {
-            uint16 transKey = translateSDLKey(event.key.keysym.sym);
+            uint16 transKey = m_sdlkToCustom[event.key.keysym.sym];
                         
             if (transKey)
             {
@@ -41,7 +35,7 @@ void SInputHandler::update(const SDL_Event& event)
 
         case SDL_KEYUP:
         {
-            uint16 transKey = translateSDLKey(event.key.keysym.sym);
+            uint16 transKey = m_sdlkToCustom[event.key.keysym.sym];
             if (transKey) 
             {
                 m_currState ^= transKey;
@@ -77,23 +71,14 @@ SInputHandler::SInputHandler():
     m_currState(0U),
     m_prevState(0U),
     m_status(IH_STATUS_OK)
-{}
-
-
-/* =================================
-   Internal Function Implementations
-   ================================= */
-static uint16 translateSDLKey(const SDL_Keycode sdlKey)
 {
-    switch (sdlKey)
-    {
-    case SDLK_ESCAPE: return K_ESC;
-    case SDLK_UP:     return K_UP;
-    case SDLK_DOWN:   return K_DOWN;
-    case SDLK_LEFT:   return K_LEFT;
-    case SDLK_RIGHT:  return K_RIGHT;
-    case SDLK_SPACE:  return K_SPACE;
-    }
-
-    return 0;
+    m_sdlkToCustom[SDLK_ESCAPE]    = K_ESC;
+    m_sdlkToCustom[SDLK_UP]        = K_UP;
+    m_sdlkToCustom[SDLK_DOWN]      = K_DOWN;
+    m_sdlkToCustom[SDLK_LEFT]      = K_LEFT;
+    m_sdlkToCustom[SDLK_RIGHT]     = K_RIGHT;
+    m_sdlkToCustom[SDLK_z]         = K_A;
+    m_sdlkToCustom[SDLK_x]         = K_B;
+    m_sdlkToCustom[SDLK_RETURN]    = K_START;
+    m_sdlkToCustom[SDLK_BACKSPACE] = K_SELECT;    
 }

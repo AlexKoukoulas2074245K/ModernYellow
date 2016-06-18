@@ -4,19 +4,18 @@
    ====================== */
 
 #include "vld.h"
-#include <Windows.h>
 #include <SDL.h>
 #include <SDL_image.h>
 #include <queue>
 #include <memory>
-#include <string>
-#include <fstream>
 
 #include "portcommon.h"
 #include "gstates/gsplay.h"
 #include "mydef.h"
 #include "sinputhandler.h"
-#include "resources/textureresource.h"
+#include "resources/dataresource.h"
+#include "resources/sresmanager.h"
+#include "strutils.h"
 
 using std::string;
 
@@ -30,7 +29,6 @@ const uint32 gc_origHeight = 144;
 string g_execPath   = "";
 string g_savePath   = "";
 string g_assetPath  = "../assets/";
-string g_configPath = g_assetPath + "config.ini";
 string g_datPath    = g_assetPath + "dat/";
 string g_texPath    = g_assetPath + "tex/";
 
@@ -51,7 +49,7 @@ SDL_Renderer* g_renderer;
    Internal Function Signatures
    ============================ */
 static void extractConfigVars();
-static void calculateGameVars();
+static void adjustGameVars();
 
 /* ================
    Main Entry Point
@@ -63,7 +61,7 @@ int main(int argc, char** argv)
     using std::make_unique;
     
     extractConfigVars();
-    calculateGameVars();
+    adjustGameVars();
 
     // Initialize SDL components that are to be used by the app
     if(SDLR(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO))) 
@@ -173,21 +171,30 @@ int main(int argc, char** argv)
    ================================= */
 static void extractConfigVars()
 {    
-    if (!file_util::exists(g_configPath))
+    if (!file_util::exists(g_datPath + "config.ini"))
     {
         SDL_FORCE_DISPLAY_ERROR("Missing config file. Starting program with the default configuration");        
         return;
     }
 
-    g_fullscreen = GetPrivateProfileInt("gameconfig", "cfg_fullscreen", g_fullscreen, g_configPath.c_str());    
-    g_scale      = GetPrivateProfileInt("gameconfig", "cfg_scale", g_scale, g_configPath.c_str());
-    g_vsync      = GetPrivateProfileInt("gameconfig", "cfg_vsync", g_vsync, g_configPath.c_str());
-    g_sfxVol     = GetPrivateProfileInt("gameconfig", "cfg_sfxvol", g_sfxVol, g_configPath.c_str());
-    g_musicVol   = GetPrivateProfileInt("gameconfig", "cfg_musicvol", g_musicVol, g_configPath.c_str());
+    auto configData = castResToData(resmanager.loadResource("config.ini", RT_DATA));
+    auto content    = configData->getContent();
+
+    for (const auto& line: content)
+    {
+        const string strVal = string_utils::split(line, '=')[1];
+
+        if (string_utils::startsWith(line, "cfg_fullscreen"))    g_fullscreen = std::atoi(strVal.c_str());
+        else if (string_utils::startsWith(line, "cfg_scale"))    g_scale = std::atoi(strVal.c_str());
+        else if (string_utils::startsWith(line, "cfg_vsync"))    g_vsync = std::atoi(strVal.c_str());
+        else if (string_utils::startsWith(line, "cfg_sfxvol"))   g_sfxVol = std::atoi(strVal.c_str());
+        else if (string_utils::startsWith(line, "cfg_musicvol")) g_musicVol = std::atoi(strVal.c_str());
+    }
 }
 
-static void calculateGameVars()
+static void adjustGameVars()
 {
+    if (g_fullscreen) g_scale = 4;
     g_width  *= g_scale;
     g_height *= g_scale;
     g_tileSize *= g_scale;

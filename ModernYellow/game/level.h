@@ -16,7 +16,7 @@ class TextureResource;
 class Level final
 {    
 public:
-    using tilemap_t = std::vector<std::vector<std::unique_ptr<Tile>>>;
+    using tilemap_t = std::vector<std::vector<std::shared_ptr<Tile>>>;
 
     explicit Level(
         const string& levelName, 
@@ -27,7 +27,20 @@ public:
 
     void render() const;
 
-    bool isReady() const;
+    inline bool isReady() const;
+
+    std::shared_ptr<Tile> getTileXY(
+        const int32 worldX,
+        const int32 worldY);
+    
+    std::shared_ptr<Tile> getTileRC(
+        const uint32 col,
+        const uint32 row);
+
+    std::shared_ptr<Tile> getTileLeftOf(const std::shared_ptr<Tile> tile);
+    std::shared_ptr<Tile> getTileRightOf(const std::shared_ptr<Tile> tile);
+    std::shared_ptr<Tile> getTileAbove(const std::shared_ptr<Tile> tile);
+    std::shared_ptr<Tile> getTileBelow(const std::shared_ptr<Tile> tile);
 
     void setOffset( 
         const int32 xOffset = 0, 

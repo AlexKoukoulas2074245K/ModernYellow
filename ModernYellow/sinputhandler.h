@@ -6,18 +6,22 @@
 #pragma once
 
 #include <SDL_events.h>
+#include <unordered_map>
 #include "mydef.h"
 
 // Instance retrieval convenience macro
 #define ihandler SInputHandler::instance()
 
 // Public Key constants
-const uint16 K_ESC   = 0x0001;
-const uint16 K_UP    = 0x0002;
-const uint16 K_DOWN  = 0x0004;
-const uint16 K_LEFT  = 0x0008;
-const uint16 K_RIGHT = 0x0010;
-const uint16 K_SPACE = 0x0020;
+const uint16 K_ESC    = 0x0001;
+const uint16 K_UP     = 0x0002;
+const uint16 K_DOWN   = 0x0004;
+const uint16 K_LEFT   = 0x0008;
+const uint16 K_RIGHT  = 0x0010;
+const uint16 K_A      = 0x0020;
+const uint16 K_B      = 0x0040;
+const uint16 K_SELECT = 0x0080;
+const uint16 K_START  = 0x0100;
 
 class SInputHandler final
 {
@@ -51,4 +55,5 @@ private:
     uint8  m_status;
     uint16 m_currState;
     uint16 m_prevState;
+    std::unordered_map<SDL_Keycode, uint16> m_sdlkToCustom;
 };

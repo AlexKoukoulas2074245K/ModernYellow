@@ -10,6 +10,7 @@
 #include "../sinputhandler.h"
 #include "../game/level.h"
 #include "../game/sprite.h"
+#include "../game/player.h"
 #include "../portcommon.h"
 #include <SDL_render.h>
 #include <SDL_log.h>
@@ -28,14 +29,16 @@ int32 yo = 0;
    Public Methods
    ============== */
 GSPlay::GSPlay():
-    GState(),
-    m_level(nullptr)
-{    
-    m_level = std::make_unique<Level>("tpallet");
-    
+    GState()
+{        
     auto pAtlas = castResToTex(resmanager.loadResource("tilemaps/overworldmap.png", RT_TEXTURE));
     
-    m_player = std::make_unique<Sprite>(64, 64, 6 * DEFAULT_TILE_SIZE, 14 * DEFAULT_TILE_SIZE, pAtlas);
+    m_pLevel = std::make_unique<Level>("tpallet");
+
+    m_pPlayer = std::make_unique<Player>(
+        m_pLevel->getTileRC(8, 14),
+        m_pLevel,
+        pAtlas);
     
 }
 
@@ -45,17 +48,17 @@ GSPlay::~GSPlay()
 
 void GSPlay::update()
 {           
-    m_player->update();
+    m_pPlayer->update();
 
-    xo = g_width / 2  - m_player->getX() - g_tileSize;
-    yo = g_height / 2 - m_player->getY() - g_tileSize;
+    xo = g_width / 2  - m_pPlayer->getX() - g_tileSize;
+    yo = g_height / 2 - m_pPlayer->getY() - g_tileSize;
 
-    m_level->setOffset(xo, yo);
-    m_player->setOffset(xo, yo);
+    m_pLevel->setOffset(xo, yo);
+    m_pPlayer->setOffset(xo, yo);
 }
 
 void GSPlay::render()
 {        
-    m_level->render();       
-    m_player->render();
+    m_pLevel->render();       
+    m_pPlayer->render();
 }
