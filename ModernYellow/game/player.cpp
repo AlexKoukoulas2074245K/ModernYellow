@@ -6,6 +6,7 @@
 #include "player.h"
 #include "level.h"
 #include "sprite.h"
+#include "npc.h"
 #include "tile.h"
 #include "../sinputhandler.h"
 #include <SDL_log.h>
@@ -15,7 +16,8 @@
    ============== */
 Player::Player(
     const std::shared_ptr<Tile> pInitTile,
-    const std::shared_ptr<Level> pLevelRef,
+    const Direction initDir,
+    const std::shared_ptr<const Level> pLevelRef,
     const std::shared_ptr<TextureResource>& pAtlas):
 
     m_pLevelRef(pLevelRef)
@@ -24,6 +26,7 @@ Player::Player(
         PLAYER_TEX_U,
         PLAYER_TEX_V,
         pInitTile,
+        initDir,
         m_pLevelRef,
         pAtlas);
 }
@@ -32,6 +35,23 @@ Player::~Player(){}
 
 void Player::update()
 {
+    if (ihandler.isKeyTapped(K_A))
+    {
+        std::shared_ptr<Npc> pNpc;
+        switch (m_pSprite->getDir())
+        {
+            case DIR_DOWN: pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileBelow(m_pSprite->getCurrTile())); break;
+            case DIR_UP: pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileAbove(m_pSprite->getCurrTile())); break;
+            case DIR_LEFT: pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileLeftOf(m_pSprite->getCurrTile())); break;
+            case DIR_RIGHT: pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileRightOf(m_pSprite->getCurrTile())); break;
+        }
+        
+        if (pNpc)
+        {
+            SDL_Log(pNpc->getDialogue().c_str());
+        }
+    }
+
     if      (ihandler.isKeyTapped(K_DOWN))  m_pSprite->getDir() == DIR_DOWN  ? m_pSprite->tryMove(DIR_DOWN)  : m_pSprite->tryChangeDirection(DIR_DOWN);    
     else if (ihandler.isKeyTapped(K_UP))    m_pSprite->getDir() == DIR_UP    ? m_pSprite->tryMove(DIR_UP)    : m_pSprite->tryChangeDirection(DIR_UP);    
     else if (ihandler.isKeyTapped(K_LEFT))  m_pSprite->getDir() == DIR_LEFT  ? m_pSprite->tryMove(DIR_LEFT)  : m_pSprite->tryChangeDirection(DIR_LEFT);    
@@ -44,8 +64,9 @@ void Player::update()
 
     else
     {
-        if (m_pSprite->getNextTile()->getTileType() == TT_SOLID)
-        {
+        if (!m_pSprite->getNextTile()->isWalkable() && 
+            m_pSprite->getState() != Sprite::S_MOVING)
+        {            
             if ((m_pSprite->getDir() == DIR_DOWN  && !ihandler.isKeyDown(K_DOWN))   ||
                 (m_pSprite->getDir() == DIR_UP    && !ihandler.isKeyDown(DIR_UP))   ||
                 (m_pSprite->getDir() == DIR_LEFT  && !ihandler.isKeyDown(DIR_LEFT)) ||

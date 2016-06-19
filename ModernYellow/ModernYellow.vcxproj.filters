@@ -57,6 +57,9 @@
     <ClCompile Include="game\player.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="game\npc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mydef.h">
@@ -102,6 +105,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="game\player.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="game\npc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

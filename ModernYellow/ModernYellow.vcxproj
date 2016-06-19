@@ -54,7 +54,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL_mixer.lib;SDL2.lib;SDL2_image.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL_mixer.lib;SDL2.lib;SDL2_image.lib;SDL2main.lib; SDL2gfx.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -70,12 +70,13 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL_mixer.lib;SDL2.lib;SDL2_image.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL_mixer.lib;SDL2.lib;SDL2_image.lib;SDL2main.lib; SDL2gfx.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="game\level.cpp" />
+    <ClCompile Include="game\npc.cpp" />
     <ClCompile Include="game\player.cpp" />
     <ClCompile Include="game\sprite.cpp" />
     <ClCompile Include="game\tile.cpp" />
@@ -92,6 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game\level.h" />
+    <ClInclude Include="game\npc.h" />
     <ClInclude Include="game\player.h" />
     <ClInclude Include="game\sprite.h" />
     <ClInclude Include="game\tile.h" />

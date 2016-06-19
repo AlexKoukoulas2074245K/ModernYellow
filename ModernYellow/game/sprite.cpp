@@ -33,7 +33,7 @@ struct Sprite::spriteImpl
     
     std::shared_ptr<Tile> m_pCurrTile;
     std::shared_ptr<Tile> m_pNextTile;
-    std::shared_ptr<const Level> m_pLevelRef;
+    std::weak_ptr<const Level> m_pLevelRef;
 
     uint32 m_xRendOffset, m_yRendOffset;    
     uint32 m_currFrame;
@@ -52,6 +52,7 @@ Sprite::Sprite(
     const uint32 texU,
     const uint32 texV,
     const std::shared_ptr<Tile> pInitTile,
+    const Direction initDir,
     const std::shared_ptr<const Level> pLevelRef,
     const std::shared_ptr<TextureResource>& pAtlas):
 
@@ -61,15 +62,16 @@ Sprite::Sprite(
 
     m_impl->m_pLevelRef = pLevelRef;
 
-    m_impl->m_pCurrTile = pInitTile;
+    m_impl->m_pCurrTile = pInitTile;    
     m_impl->m_pNextTile = pInitTile;
+    m_impl->m_pCurrTile->setOccupied(true);
 
     m_impl->m_worldPos.x = m_impl->m_pCurrTile->getX();
     m_impl->m_worldPos.y = m_impl->m_pCurrTile->getY();
     m_impl->m_worldPos.w = g_tileSize;
     m_impl->m_worldPos.h = g_tileSize;
 
-    m_impl->m_currDir = DIR_DOWN;
+    m_impl->m_currDir = initDir;
 
     m_impl->m_xRendOffset = 0;
     m_impl->m_yRendOffset = 0;
@@ -91,6 +93,9 @@ Sprite::~Sprite()
 
 void Sprite::tryMove(const Direction dir)
 {    
+    if (m_impl->m_pLevelRef.expired()) return;
+    auto pLevelRef = m_impl->m_pLevelRef.lock();
+
     switch (m_impl->m_currState)
     {
         case S_MOVING:        
@@ -102,15 +107,20 @@ void Sprite::tryMove(const Direction dir)
 
             switch (dir)
             {
-            case DIR_DOWN:  pNextTile = m_impl->m_pLevelRef->getTileBelow(m_impl->m_pCurrTile); break;
-            case DIR_UP:    pNextTile = m_impl->m_pLevelRef->getTileAbove(m_impl->m_pCurrTile); break;
-            case DIR_LEFT:  pNextTile = m_impl->m_pLevelRef->getTileLeftOf(m_impl->m_pCurrTile); break;
-            case DIR_RIGHT: pNextTile = m_impl->m_pLevelRef->getTileRightOf(m_impl->m_pCurrTile); break;
+            case DIR_DOWN:  pNextTile = pLevelRef->getTileBelow(m_impl->m_pCurrTile); break;
+            case DIR_UP:    pNextTile = pLevelRef->getTileAbove(m_impl->m_pCurrTile); break;
+            case DIR_LEFT:  pNextTile = pLevelRef->getTileLeftOf(m_impl->m_pCurrTile); break;
+            case DIR_RIGHT: pNextTile = pLevelRef->getTileRightOf(m_impl->m_pCurrTile); break;
             }
 
-            if (pNextTile->getTileType() != TT_SOLID)
+            // Move only if the next tile is not solid or occupied
+            if (pNextTile->isWalkable())
             {
                 m_impl->m_currState = S_MOVING;
+
+                // "Reserve" the target tile as occupied to avoid
+                // two sprites moving to the same tile
+                pNextTile->setOccupied(true);
             }
 
             m_impl->m_currDir = dir;
@@ -207,6 +217,7 @@ void Sprite::updatePosition()
                 m_impl->m_worldPos.x == m_impl->m_pNextTile->getX() &&
                 m_impl->m_worldPos.y == m_impl->m_pNextTile->getY())
             {
+                m_impl->m_pCurrTile->setOccupied(false);                
                 m_impl->m_pCurrTile = m_impl->m_pNextTile;
                 m_impl->m_currState = S_IDLE;
                 m_impl->m_walkingAnimation = false;

@@ -12,12 +12,10 @@
 class Level;
 class TextureResource;
 class Player;
-class Sprite;
 class GSPlay final: public GState
 {
 public:
-    using npcs_t = std::vector<std::unique_ptr<Sprite>>;
-
+    
     GSPlay();
 
     ~GSPlay();
@@ -29,6 +27,5 @@ public:
 private:
 
     std::shared_ptr<Level> m_pLevel;
-    std::unique_ptr<Player> m_pPlayer;
-    npcs_t m_npcs;
+    std::unique_ptr<Player> m_pPlayer;    
 };

@@ -17,7 +17,8 @@ public:
 
     Player(
         const std::shared_ptr<Tile> pInitTile,
-        const std::shared_ptr<Level> pLevelRef,
+        const Direction initDir,
+        const std::shared_ptr<const Level> pLevelRef,
         const std::shared_ptr<TextureResource>& pAtlas);
 
     ~Player();
@@ -45,7 +46,7 @@ private:
 
 private:
 
-    std::shared_ptr<Level> m_pLevelRef;
+    std::shared_ptr<const Level> m_pLevelRef;
     std::unique_ptr<Sprite> m_pSprite;
 
 };

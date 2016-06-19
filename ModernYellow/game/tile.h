@@ -40,9 +40,14 @@ public:
 
     uint32 getCol() const;
 
+    bool isWalkable() const;
+
+    void setOccupied(const bool occupied);
+
 private:
     
     TileType m_tileType;
     uint32 m_col;
     uint32 m_row;    
+    bool m_occupied;
 };

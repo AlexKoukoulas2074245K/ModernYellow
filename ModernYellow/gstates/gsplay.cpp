@@ -9,8 +9,8 @@
 #include "../resources/textureresource.h"
 #include "../sinputhandler.h"
 #include "../game/level.h"
-#include "../game/sprite.h"
 #include "../game/player.h"
+#include "../game/npc.h"
 #include "../portcommon.h"
 #include <SDL_render.h>
 #include <SDL_log.h>
@@ -33,14 +33,15 @@ GSPlay::GSPlay():
 {            
     auto pAtlas = castResToTex(resmanager.loadResource("tilemaps/overworldmap.png", RT_TEXTURE));
     
-    m_pLevel = std::shared_ptr<Level>(new Level("opallet", pAtlas));    
-    
+    m_pLevel = std::make_shared<Level>("opallet", pAtlas);    
+    m_pLevel->loadNPCData(pAtlas);
+
     m_pPlayer = std::make_unique<Player>(
         m_pLevel->getTileRC(8, 14),        
+        Direction::DIR_DOWN,
         m_pLevel,
         pAtlas);
-    
-    m_pLevel->getNPCData(pAtlas, m_npcs);       
+        
 }
 
 GSPlay::~GSPlay()
@@ -50,27 +51,18 @@ GSPlay::~GSPlay()
 void GSPlay::update()
 {           
     m_pPlayer->update();
+    m_pLevel->update();
+   
 
     globXOffset = g_width / 2  - m_pPlayer->getX() - g_tileSize;
     globYOffset = g_height / 2 - m_pPlayer->getY() - g_tileSize;
 
     m_pLevel->setOffset(globXOffset, globYOffset);    
-    m_pPlayer->setOffset(globXOffset, globYOffset);
-
-    for (const auto& npc: m_npcs)
-    {
-        npc->setOffset(globXOffset, globYOffset);
-    }
+    m_pPlayer->setOffset(globXOffset, globYOffset); 
 }
 
 void GSPlay::render()
 {        
-    m_pLevel->render();       
-    
-    for (const auto& npc: m_npcs)
-    {
-        npc->render();
-    }
-
+    m_pLevel->render();           
     m_pPlayer->render();
 }

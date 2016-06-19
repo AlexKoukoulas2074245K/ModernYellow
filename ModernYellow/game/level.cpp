@@ -6,7 +6,7 @@
 
 #include "level.h"
 #include "tile.h"
-#include "sprite.h"
+#include "npc.h"
 #include "../resources/sresmanager.h"
 #include "../resources/dataresource.h"
 #include "../resources/textureresource.h"
@@ -14,6 +14,12 @@
 #include <SDL_log.h>
 #include <SDL_render.h>
 #include <SDL_assert.h>
+
+#define LEVEL_DEBUG_OCC
+#if (defined (_DEBUG) || defined (DEBUG)) && defined (LEVEL_DEBUG_OCC)
+#include <SDL_gfxPrimitives.h>
+#endif
+
 
 #define CORRUPTED_LEVEL() {SDL_FORCE_DISPLAY_ERROR("Corrupted level file: " + m_name); return false;}
 
@@ -50,9 +56,37 @@ Level::Level(
 
 Level::~Level() = default;
 
+void Level::update()
+{
+    for (const auto& npc : m_npcs)
+    {
+        npc->update();
+    }
+}
+
 void Level::render() const
 {
      SDL_RenderCopy(g_renderer, m_levelTex->getTexture().get(), nullptr, &m_levelArea);
+     
+#if (defined (_DEBUG) || defined (DEBUG)) && defined (LEVEL_DEBUG_OCC)
+     for (size_t y = 0; y < m_rows; ++y)
+     {
+         for (size_t x = 0; x < m_cols; ++x)
+         {
+             if (!m_tilemap[y][x]->isWalkable() && m_tilemap[y][x]->getTileType() != TT_SOLID)
+             {                 
+                 auto worldX = m_tilemap[y][x]->getX();
+                 auto worldY = m_tilemap[y][x]->getY();
+                 filledCircleColor(g_renderer, (worldX + g_tileSize/2 + m_xOffset), (worldY + g_tileSize/2 + m_yOffset), g_tileSize/2, envcolors::EC_BLACK);
+             }
+         }
+     }
+#endif
+
+     for (const auto& npc : m_npcs)
+     {
+        npc->render();
+     }
 }
 
 bool Level::isReady() const
@@ -60,12 +94,12 @@ bool Level::isReady() const
     return m_ready;
 }
 
-void Level::getNPCData(
-    const std::shared_ptr<TextureResource>& pAtlas,
-    std::vector<std::unique_ptr<Sprite>>& outNpcs) const
+bool Level::loadNPCData(const std::shared_ptr<TextureResource>& pAtlas)
 {
     // Load the dataresource 
     auto pNPCResource = castResToData(resmanager.loadResource("npcs.dat", RT_DATA));
+
+    if (!pNPCResource) return false;
 
     // Get Line by Line content
     auto pContent = pNPCResource->getContent();
@@ -73,24 +107,50 @@ void Level::getNPCData(
     for (size_t lineIndex = 0; lineIndex < pContent.size(); lineIndex += 2)
     {
         const auto& line = pContent[lineIndex];
+        const auto& dialogue = pContent[lineIndex + 1];
 
         if (string_utils::startsWith(line, m_name))
         {
             auto lineComps   = string_utils::split(line, ' ');
             auto vecPosComps = string_utils::split(lineComps[1], ',');
             auto texUVComps  = string_utils::split(lineComps[2], ',');
-            auto strMoving   = lineComps[3];
-            auto strDir      = lineComps[4];
-            auto strTrainer  = lineComps[5];
+            auto movingNpc   = (lineComps[3] == "true") ? true : false;
+            auto dir         = (Direction)(std::atoi(lineComps[4].c_str()));
+            auto isTrainer  = (lineComps[5] == "true") ? true : false;
            
-            outNpcs.push_back(std::make_unique<Sprite>(
+            m_npcs.push_back(std::make_unique<Npc>(
                 std::atoi(texUVComps[0].c_str()) * DEFAULT_TILE_SIZE,
                 std::atoi(texUVComps[1].c_str()) * DEFAULT_TILE_SIZE,
                 getTileRC(std::atoi(vecPosComps[0].c_str()), std::atoi(vecPosComps[1].c_str())),
+                dir,
                 shared_from_this(),
-                pAtlas));
+                pAtlas,
+                movingNpc,                
+                isTrainer,
+                dialogue));
         }
     }    
+
+    return true;
+}
+
+std::shared_ptr<Npc> Level::getNpcAt(const std::shared_ptr<Tile>& tile) const
+{
+    return getNpcAtRC(tile->getCol(), tile->getRow());
+}
+
+std::shared_ptr<Npc> Level::getNpcAtRC(const uint32 col, const uint32 row) const
+{
+    for (auto npc: m_npcs)
+    {
+        if (npc->getCurrTile()->getCol() == col &&
+            npc->getCurrTile()->getRow() == row)
+        {
+            return npc;
+        }
+    }
+
+    return nullptr;
 }
 
 std::shared_ptr<Tile> Level::getTileXY(
@@ -148,6 +208,11 @@ void Level::setOffset(
 
     m_levelArea.x = m_xOffset;
     m_levelArea.y = m_yOffset;
+    
+    for (const auto& npc : m_npcs)
+    {
+        npc->setOffset(xOffset, yOffset);
+    }
 }
 
 /* ===============

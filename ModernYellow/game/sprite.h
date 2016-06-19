@@ -31,6 +31,7 @@ public:
         const uint32 texU, 
         const uint32 texV,
         const std::shared_ptr<Tile> pInitTile,
+        const Direction initDir,
         const std::shared_ptr<const Level> pLevelRef,
         const std::shared_ptr<TextureResource>& pAtlas);
 

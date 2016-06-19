@@ -15,7 +15,8 @@ Tile::Tile(
     
     m_col(col),
     m_row(row),    
-    m_tileType((TileType)tileType)    
+    m_tileType((TileType)tileType),
+    m_occupied(false)
 {    
 }
 
@@ -51,4 +52,14 @@ uint32 Tile::getRow() const
 uint32 Tile::getCol() const
 {
     return m_col;
+}
+
+bool Tile::isWalkable() const
+{
+    return !m_occupied && m_tileType != TT_SOLID;
+}
+
+void Tile::setOccupied(const bool occupied)
+{
+    m_occupied = occupied;
 }
