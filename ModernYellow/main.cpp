@@ -16,6 +16,7 @@
 #include "resources/dataresource.h"
 #include "resources/sresmanager.h"
 #include "strutils.h"
+#include "font.h"
 
 using std::string;
 
@@ -44,6 +45,9 @@ uint32 g_tileSize   = 16;
 
 // Global Renderer
 SDL_Renderer* g_renderer;
+
+// Global Font
+std::shared_ptr<Font> g_font;
 
 /* ============================
    Internal Function Signatures
@@ -92,6 +96,9 @@ int main(int argc, char** argv)
         return -1;
     }
 
+    // Initialize Font
+    g_font = std::make_shared<Font>();
+
     // Acquire paths
     g_savePath = SDL_GetPrefPath(gc_orgName.c_str(), gc_appTitle.c_str());
     g_execPath = SDL_GetBasePath();   
@@ -133,7 +140,9 @@ int main(int argc, char** argv)
                                ALPHA(envcolors::EC_BLACK));
 
         SDL_RenderClear(g_renderer);
-        gstates.front()->render();        
+        gstates.front()->render(); 
+        
+
         SDL_RenderPresent(g_renderer);
 
         // Input frame end

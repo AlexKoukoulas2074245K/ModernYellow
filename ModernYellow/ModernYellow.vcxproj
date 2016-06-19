@@ -75,6 +75,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="font.cpp" />
     <ClCompile Include="game\level.cpp" />
     <ClCompile Include="game\npc.cpp" />
     <ClCompile Include="game\player.cpp" />
@@ -92,6 +93,7 @@
     <ClCompile Include="strutils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="font.h" />
     <ClInclude Include="game\level.h" />
     <ClInclude Include="game\npc.h" />
     <ClInclude Include="game\player.h" />

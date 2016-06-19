@@ -64,7 +64,7 @@ void Level::update()
     }
 }
 
-void Level::render() const
+void Level::render()
 {
      SDL_RenderCopy(g_renderer, m_levelTex->getTexture().get(), nullptr, &m_levelArea);
      

@@ -28,7 +28,7 @@ public:
 
     void update();
 
-    void render() const;
+    void render();
 
     inline bool isReady() const;
 
