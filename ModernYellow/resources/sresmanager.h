@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <memory>
+#include "../mydef.h"
 #include <unordered_map>
 #include <string>
 

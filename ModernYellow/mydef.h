@@ -6,6 +6,10 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
+
+struct SDL_Renderer;
+class Font;
 
 using int8  = int8_t;
 using int16 = int16_t;
@@ -16,6 +20,9 @@ using uint8  = uint8_t;
 using uint16 = uint16_t;
 using uint32 = uint32_t;
 using uint64 = uint64_t;
+
+using pRenderer_t = std::shared_ptr<SDL_Renderer>;
+using pFont_t     = std::shared_ptr<Font>;
 
 const uint32 BITS_PER_PIXEL = 32U;
 const uint32 DEFAULT_TILE_SIZE = 16U;

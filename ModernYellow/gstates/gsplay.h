@@ -6,7 +6,7 @@
 #pragma once
 
 #include "gstate.h"
-#include <memory>
+#include "../mydef.h"
 #include <vector>
 
 class Level;

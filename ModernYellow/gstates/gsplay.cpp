@@ -4,19 +4,20 @@
    ====================== */
 
 #include "gsplay.h"
-#include "../mydef.h"
 #include "../resources/sresmanager.h"
 #include "../resources/textureresource.h"
 #include "../sinputhandler.h"
 #include "../game/level.h"
 #include "../game/player.h"
 #include "../game/npc.h"
+#include "../game/tile.h"
 #include "../portcommon.h"
 #include <SDL_render.h>
 #include <SDL_log.h>
 #include <SDL_gfxPrimitives.h>
+#include <SDL_timer.h>
 
-extern SDL_Renderer* g_renderer;
+extern pRenderer_t g_pRenderer;
 extern uint32 g_tileSize;
 extern uint32 g_width;
 extern uint32 g_height;
@@ -33,9 +34,11 @@ GSPlay::GSPlay():
 {            
     auto pAtlas = castResToTex(resmanager.loadResource("tilemaps/overworldmap.png", RT_TEXTURE));
     
+    auto start = SDL_GetTicks();
     m_pLevel = std::make_shared<Level>("opallet", pAtlas);    
     m_pLevel->loadNPCData(pAtlas);
 
+    SDL_Log(std::to_string(SDL_GetTicks() - start).c_str());
     m_pPlayer = std::make_unique<Player>(
         m_pLevel->getTileRC(8, 14),        
         Direction::DIR_DOWN,
@@ -65,4 +68,5 @@ void GSPlay::render()
 {        
     m_pLevel->render();           
     m_pPlayer->render();
+    m_pLevel->renderEncOccTiles();
 }

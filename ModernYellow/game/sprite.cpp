@@ -14,8 +14,10 @@
 #include <SDL_render.h>
 #include <SDL_log.h>
 
+//#define SPRITE_NO_COL
+
 extern uint32 g_tileSize;
-extern SDL_Renderer* g_renderer;
+extern pRenderer_t g_pRenderer;
 extern uint32 g_scale;
 
 /* Cached width of the last seen atlas texture */
@@ -113,15 +115,20 @@ void Sprite::tryMove(const Direction dir)
             case DIR_RIGHT: pNextTile = pLevelRef->getTileRightOf(m_impl->m_pCurrTile); break;
             }
 
+#if !defined(SPRITE_NO_COL)
             // Move only if the next tile is not solid or occupied
             if (pNextTile->isWalkable())
             {
+#endif
                 m_impl->m_currState = S_MOVING;
 
                 // "Reserve" the target tile as occupied to avoid
                 // two sprites moving to the same tile
                 pNextTile->setOccupied(true);
+
+#if !defined(SPRITE_NO_COL)
             }
+#endif
 
             m_impl->m_currDir = dir;
             m_impl->m_pNextTile = pNextTile;
@@ -168,9 +175,8 @@ void Sprite::update()
 void Sprite::updateAnimation()
 {
     if (m_impl->m_walkingAnimation)
-    {
-        m_impl->m_frameTime--;
-        if (m_impl->m_frameTime <= 0)
+    {        
+        if (m_impl->m_frameTime-- <= 0)
         {
             m_impl->m_frameTime = SPRITE_ANI_DELAY;
             m_impl->m_currFrame = (m_impl->m_currFrame + 1) % SPRITE_MAX_FRAMES_PER_ANI;
@@ -193,9 +199,8 @@ void Sprite::updatePosition()
         } break;
 
         case S_DIRFREEZE:
-        {
-            m_impl->m_changeDirDelay--;
-            if (m_impl->m_changeDirDelay <= 0)
+        {            
+            if (m_impl->m_changeDirDelay-- <= 0)
             {
                 m_impl->m_changeDirDelay = 0;
                 m_impl->m_currState = S_IDLE;
@@ -240,7 +245,7 @@ void Sprite::render()
     auto frame = anim[m_impl->m_currFrame];
     
     SDL_RenderCopy(
-        g_renderer, 
+        g_pRenderer.get(), 
         frame->getTexture().get(),
         nullptr, 
         &rendRect);

@@ -8,7 +8,6 @@
 #include "../mydef.h"
 
 #include <vector>
-#include <memory>
 
 using std::string;
 class Tile;
@@ -18,8 +17,9 @@ class Level: public std::enable_shared_from_this<Level>
 {    
 public:
     using tilemap_t = std::vector<std::vector<std::shared_ptr<Tile>>>;
+    using anitilemap_t = std::vector<std::shared_ptr<Tile>>;
     using npcs_t = std::vector<std::shared_ptr<Npc>>;
-
+    
     explicit Level(
         const string& levelName, 
         const std::shared_ptr<TextureResource>& pAtlas);
@@ -30,7 +30,9 @@ public:
 
     void render();
 
-    inline bool isReady() const;
+    void renderEncOccTiles();
+
+    bool isReady() const;
 
     // Needs to be called after Level construction, as there is use
     // of shared_from_this and during construction no shared_ptr is 
@@ -69,8 +71,11 @@ private:
     bool m_ready;
     string m_name;
     tilemap_t m_tilemap;    
+    anitilemap_t m_seaTiles;
+    anitilemap_t m_flowerTiles;
+    anitilemap_t m_encounterTiles;
     npcs_t m_npcs;
-    std::shared_ptr<TextureResource> m_levelTex;
+    std::shared_ptr<TextureResource> m_levelTex;      
     SDL_Rect m_levelArea;
     uint32 m_rows, m_cols;
     int32 m_xOffset, m_yOffset;

@@ -5,7 +5,6 @@
 
 #pragma once
 #include "../mydef.h"
-#include <memory>
 
 class Sprite;
 class Tile;
@@ -26,6 +25,10 @@ public:
     void update();
 
     void render();
+
+    std::shared_ptr<Tile> getCurrTile() const;
+
+    std::shared_ptr<Tile> getNextTile() const;
 
     int32 getX() const;
 

@@ -8,7 +8,7 @@
 #include "../portcommon.h"
 
 extern string g_texPath;
-extern SDL_Renderer* g_renderer;
+extern pRenderer_t g_pRenderer;
 
 /* Color Masks */
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -62,7 +62,7 @@ bool TextureResource::load()
     }
 
     // Load surface
-    m_surface.reset(IMG_Load((g_texPath + m_name).c_str()));
+    m_pSurface.reset(IMG_Load((g_texPath + m_name).c_str()));
 
     // Compile texture
     compileTexture();
@@ -73,18 +73,18 @@ bool TextureResource::load()
 void TextureResource::compileTexture()
 {    
     gatherSurfacePixelData();
-    m_texture.reset(SDL_CreateTextureFromSurface(g_renderer, m_surface.get()));
+    m_pTexture.reset(SDL_CreateTextureFromSurface(g_pRenderer.get(), m_pSurface.get()));
 }
 
 void TextureResource::swapColor(const uint32 src, const uint32 dst)
 {
-    if (SDL_MUSTLOCK(m_surface.get()))
+    if (SDL_MUSTLOCK(m_pSurface.get()))
     {
-        SDL_LockSurface(m_surface.get());
+        SDL_LockSurface(m_pSurface.get());
     }
 
-    int32 w = m_surface.get()->w;
-    int32 h = m_surface.get()->h;
+    int32 w = m_pSurface.get()->w;
+    int32 h = m_pSurface.get()->h;
 
     for (int y = 0; y < h; ++y)
     {
@@ -99,22 +99,22 @@ void TextureResource::swapColor(const uint32 src, const uint32 dst)
 
     compileTexture();
 
-    if (SDL_MUSTLOCK(m_surface.get()))
+    if (SDL_MUSTLOCK(m_pSurface.get()))
     {
-        SDL_UnlockSurface(m_surface.get());
+        SDL_UnlockSurface(m_pSurface.get());
     }
 }
 
 void TextureResource::darken()
 {
-    if (SDL_MUSTLOCK(m_surface.get()))
+    if (SDL_MUSTLOCK(m_pSurface.get()))
     {
-        SDL_LockSurface(m_surface.get());
+        SDL_LockSurface(m_pSurface.get());
     }
 
-    for (int y = 0; y < m_surface->h; ++y)
+    for (int y = 0; y < m_pSurface->h; ++y)
     {
-        for (int x = 0; x < m_surface->w; ++x)
+        for (int x = 0; x < m_pSurface->w; ++x)
         {
             // Grab curr pixel
             uint32 currPixel = getPixelAt(x, y);
@@ -134,9 +134,9 @@ void TextureResource::darken()
 
     compileTexture();
 
-    if (SDL_MUSTLOCK(m_surface.get()))
+    if (SDL_MUSTLOCK(m_pSurface.get()))
     {
-        SDL_UnlockSurface(m_surface.get());
+        SDL_UnlockSurface(m_pSurface.get());
     }
 }
 
@@ -160,40 +160,40 @@ std::shared_ptr<TextureResource> TextureResource::getSubTexture(
 
 std::shared_ptr<TextureResource> TextureResource::getHorFlippedTexture() const
 {
-    auto pTexRes = TextureResource::createEmptyTexture(m_surface->w, m_surface->h);
+    auto pTexRes = TextureResource::createEmptyTexture(m_pSurface->w, m_pSurface->h);
 
     if (SDL_MUSTLOCK(pTexRes->getSurface().get())) SDL_LockSurface(pTexRes->getSurface().get());
-    if (SDL_MUSTLOCK(m_surface.get())) SDL_LockSurface(m_surface.get());
+    if (SDL_MUSTLOCK(m_pSurface.get())) SDL_LockSurface(m_pSurface.get());
 
-    for (int y = 0; y < m_surface->h; ++y)
+    for (int y = 0; y < m_pSurface->h; ++y)
     {
-        for (int x = 0; x < m_surface->w; ++x)
+        for (int x = 0; x < m_pSurface->w; ++x)
         {
-            pTexRes->setPixelAt(getPixelAt(x, y), m_surface->w - 1 - x, y);
+            pTexRes->setPixelAt(getPixelAt(x, y), m_pSurface->w - 1 - x, y);
         }
     }
 
     pTexRes->compileTexture();
 
     if (SDL_MUSTLOCK(pTexRes->getSurface().get())) SDL_UnlockSurface(pTexRes->getSurface().get());
-    if (SDL_MUSTLOCK(m_surface.get())) SDL_UnlockSurface(m_surface.get());
+    if (SDL_MUSTLOCK(m_pSurface.get())) SDL_UnlockSurface(m_pSurface.get());
 
     return pTexRes;
 }
 
 const TextureResource::pTexture_t& TextureResource::getTexture() const
 {
-    return m_texture;
+    return m_pTexture;
 }
 
 const TextureResource::pSurface_t& TextureResource::getSurface() const
 {
-    return m_surface;
+    return m_pSurface;
 }
 
 TextureResource::pSurface_t& TextureResource::getSurface()
 {
-    return m_surface;
+    return m_pSurface;
 }
 
 /* ===============
@@ -201,17 +201,17 @@ TextureResource::pSurface_t& TextureResource::getSurface()
    =============== */
 TextureResource::TextureResource(const string& resourceName):    
     Resource(resourceName),
-    m_texture(nullptr, SDL_DestroyTexture),
-    m_surface(nullptr, SDL_FreeSurface)
+    m_pTexture(nullptr, SDL_DestroyTexture),
+    m_pSurface(nullptr, SDL_FreeSurface)
 {
 }
 
 void TextureResource::gatherSurfacePixelData()
 {
     m_colors.clear();
-    for (int y = 0; y < m_surface->h; ++y)
+    for (int y = 0; y < m_pSurface->h; ++y)
     {
-        for (int x = 0; x < m_surface->w; ++x)
+        for (int x = 0; x < m_pSurface->w; ++x)
         {
             m_colors.insert(getPixelAt(x, y));
         }
@@ -220,9 +220,9 @@ void TextureResource::gatherSurfacePixelData()
 
 uint32 TextureResource::getPixelAt(const uint32 x, const uint32 y) const
 {    
-    int bpp = m_surface->format->BytesPerPixel;
+    int bpp = m_pSurface->format->BytesPerPixel;
     /* Here p is the address to the pixel we want to retrieve */
-    Uint8 *p = (Uint8 *) m_surface->pixels + y * m_surface->pitch + x * bpp;
+    Uint8 *p = (Uint8 *) m_pSurface->pixels + y * m_pSurface->pitch + x * bpp;
 
     switch (bpp) {
     case 1:
@@ -254,9 +254,9 @@ void TextureResource::setPixelAt(
     const uint32 x,
     const uint32 y)
 { 
-    int bpp = m_surface->format->BytesPerPixel;
+    int bpp = m_pSurface->format->BytesPerPixel;
     /* Here p is the address to the pixel we want to set */
-    Uint8 *p = (Uint8 *) m_surface->pixels + y * m_surface->pitch + x * bpp;
+    Uint8 *p = (Uint8 *) m_pSurface->pixels + y * m_pSurface->pitch + x * bpp;
 
     switch (bpp) {
     case 1:

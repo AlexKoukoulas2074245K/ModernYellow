@@ -10,7 +10,7 @@
 #include "strutils.h"
 #include <SDL_render.h>
 
-extern SDL_Renderer* g_renderer;
+extern pRenderer_t g_pRenderer;
 extern uint32 g_scale;
 
 /* ==============
@@ -41,7 +41,7 @@ void Font::renderString(
         if (m_glyphs.count(letter))
         {
             SDL_RenderCopy(
-                g_renderer,
+                g_pRenderer.get(),
                 m_glyphs[letter]->getTexture().get(),
                 nullptr,
                 &glyphRect);

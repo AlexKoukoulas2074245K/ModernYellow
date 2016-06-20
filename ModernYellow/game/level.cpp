@@ -14,8 +14,9 @@
 #include <SDL_log.h>
 #include <SDL_render.h>
 #include <SDL_assert.h>
+#include <set>
 
-#define LEVEL_DEBUG_OCC
+//define LEVEL_DEBUG_OCC
 #if (defined (_DEBUG) || defined (DEBUG)) && defined (LEVEL_DEBUG_OCC)
 #include <SDL_gfxPrimitives.h>
 #endif
@@ -27,7 +28,7 @@ extern string g_datPath;
 extern string g_texPath;
 extern uint32 g_scale;
 extern uint32 g_tileSize;
-extern SDL_Renderer* g_renderer;
+extern pRenderer_t g_pRenderer;
 
 /* ==============
    Public Methods
@@ -61,32 +62,72 @@ void Level::update()
     for (const auto& npc : m_npcs)
     {
         npc->update();
+    }    
+
+    for (const auto& seaTile: m_seaTiles)
+    {
+        seaTile->update();
+    }
+
+    for (const auto& flowerTile: m_flowerTiles)
+    {
+        flowerTile->update();
     }
 }
 
 void Level::render()
 {
-     SDL_RenderCopy(g_renderer, m_levelTex->getTexture().get(), nullptr, &m_levelArea);
+    // First layer is the sea tiles beneath everything else
+    for (const auto& seaTile : m_seaTiles)
+    {
+        seaTile->render(m_xOffset, m_yOffset);         
+    }
+
+    // Then the level texture is rendered on top
+    SDL_RenderCopy(g_pRenderer.get(), m_levelTex->getTexture().get(), nullptr, &m_levelArea);
      
 #if (defined (_DEBUG) || defined (DEBUG)) && defined (LEVEL_DEBUG_OCC)
      for (size_t y = 0; y < m_rows; ++y)
      {
          for (size_t x = 0; x < m_cols; ++x)
          {
-             if (!m_tilemap[y][x]->isWalkable() && m_tilemap[y][x]->getTileType() != TT_SOLID)
+             if (!m_tilemap[y][x]->isWalkable() && m_tilemap[y][x]->getTileType() != Tile::TT_SOLID)
              {                 
                  auto worldX = m_tilemap[y][x]->getX();
                  auto worldY = m_tilemap[y][x]->getY();
-                 filledCircleColor(g_renderer, (worldX + g_tileSize/2 + m_xOffset), (worldY + g_tileSize/2 + m_yOffset), g_tileSize/2, envcolors::EC_BLACK);
+                 filledCircleColor(
+                     g_pRenderer.get(),
+                     (worldX + g_tileSize/2 + m_xOffset), 
+                     (worldY + g_tileSize/2 + m_yOffset), 
+                     g_tileSize/2,
+                     envcolors::EC_BLACK);
              }
          }
-     }
+     }       
 #endif
-
-     for (const auto& npc : m_npcs)
-     {
+    
+    // then the flower tiles
+    for (const auto& flowerTile: m_flowerTiles)
+    {         
+        flowerTile->render(m_xOffset, m_yOffset);         
+    }
+     
+    // then all the npcs
+    for (const auto& npc : m_npcs)
+    {
         npc->render();
-     }
+    }
+}
+
+void Level::renderEncOccTiles()
+{
+    for (const auto& encTile : m_encounterTiles)
+    {
+        if (encTile->isOccupied())
+        {
+            encTile->render(m_xOffset, m_yOffset);
+        }
+    }
 }
 
 bool Level::isReady() const
@@ -157,11 +198,11 @@ std::shared_ptr<Tile> Level::getTileXY(
     const int32 worldX,
     const int32 worldY) const
 {    
-    SDL_assert(
-        worldX >= 0 && 
-        worldX < m_levelArea.w &&
-        worldY >= 0 && 
-        worldY < m_levelArea.h);
+    if (
+        worldX < 0 && 
+        worldX >= m_levelArea.w &&
+        worldY < 0 && 
+        worldY >= m_levelArea.h) return nullptr;
 
     return m_tilemap[worldY / g_tileSize][worldX / g_tileSize];
 }
@@ -170,11 +211,11 @@ std::shared_ptr<Tile> Level::getTileRC(
     const uint32 col,
     const uint32 row) const
 {
-    SDL_assert(
-        col >= 0 &&
-        col < m_cols &&
-        row >= 0 &&
-        row < m_rows);
+    if(
+        col < 0 &&
+        col >= m_cols &&
+        row < 0 &&
+        row >= m_rows) return nullptr;
 
     return m_tilemap[row][col];
 }
@@ -261,7 +302,25 @@ bool Level::readLevelData()
         // Grab the tile type
         uint32 tileType = std::atoi(lineComps[1].c_str());
 
-        m_tilemap[rowIndex][colIndex] = std::make_unique<Tile>(colIndex, rowIndex, tileType);
+        // Add animated tiles to respective vectors
+        auto pTile = std::make_shared<Tile>(colIndex, rowIndex, tileType);
+        m_tilemap[rowIndex][colIndex] = pTile;
+        
+        if (tileType == Tile::TT_SEA)
+        {
+            m_seaTiles.push_back(pTile);
+        }
+        else if (
+            tileType == Tile::TT_FLOWER_1 || 
+            tileType == Tile::TT_FLOWER_2)
+        {
+            m_flowerTiles.push_back(pTile);
+        }
+        else if(tileType == Tile::TT_ENCOUNTER)
+        {
+            m_encounterTiles.push_back(pTile);
+        }
+
         colIndex++;
 
         if (colIndex >= m_cols)
@@ -270,6 +329,46 @@ bool Level::readLevelData()
             rowIndex++;
             m_tilemap.push_back(std::vector<std::shared_ptr<Tile>>(m_cols));
         }
+    }
+
+    // Add the extra needed sea tiles to create the illusion of
+    // the moving current in the sea tiles
+    std::set<std::shared_ptr<Tile>> perimetricalSeaTiles;
+
+    for (const auto& aniTile : m_seaTiles)
+    {
+        if (aniTile->getTileType() == Tile::TT_SEA)
+        {
+            // Get Horizontal and Vertical Tiles
+            auto pTileLeftOf = getTileLeftOf(aniTile);
+            auto pTileRightOf = getTileRightOf(aniTile);
+            auto pTileAbove = getTileAbove(aniTile);
+            auto pTileBelow = getTileBelow(aniTile);
+
+            // Get Diagonal Tiles
+            auto pTileUL = getTileRC(aniTile->getCol() - 1, aniTile->getRow() - 1);
+            auto pTileUR = getTileRC(aniTile->getCol() + 1, aniTile->getRow() - 1);
+            auto pTileDL = getTileRC(aniTile->getCol() - 1, aniTile->getRow() + 1);
+            auto pTileDR = getTileRC(aniTile->getCol() + 1, aniTile->getRow() + 1);
+
+            // Test horizontal and vertical tiles
+            if (pTileLeftOf && pTileLeftOf->getTileType() != Tile::TT_SEA) perimetricalSeaTiles.insert(pTileLeftOf);
+            if (pTileRightOf && pTileRightOf->getTileType() != Tile::TT_SEA) perimetricalSeaTiles.insert(pTileRightOf);
+            if (pTileAbove && pTileAbove->getTileType() != Tile::TT_SEA) perimetricalSeaTiles.insert(pTileAbove);
+            if (pTileBelow && pTileBelow->getTileType() != Tile::TT_SEA) perimetricalSeaTiles.insert(pTileBelow);
+            
+            // Test Diagonal Tiles
+            if (pTileUL && pTileUL->getTileType() != Tile::TT_SEA) perimetricalSeaTiles.insert(pTileUL);
+            if (pTileUR && pTileUR->getTileType() != Tile::TT_SEA) perimetricalSeaTiles.insert(pTileUR);
+            if (pTileDL && pTileDL->getTileType() != Tile::TT_SEA) perimetricalSeaTiles.insert(pTileDL);
+            if (pTileDR && pTileDR->getTileType() != Tile::TT_SEA) perimetricalSeaTiles.insert(pTileDR);
+        }
+    }
+
+    for (auto pTile : perimetricalSeaTiles)
+    {
+        pTile->addSeaTile();
+        m_seaTiles.push_back(pTile);
     }
 
     return true;

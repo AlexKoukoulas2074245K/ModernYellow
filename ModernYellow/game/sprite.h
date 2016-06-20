@@ -5,7 +5,6 @@
 
 #pragma once
 #include "../mydef.h"
-#include <memory>
 
 class TextureResource;
 class Level;

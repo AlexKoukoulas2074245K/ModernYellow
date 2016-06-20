@@ -6,7 +6,6 @@
 #pragma once
 
 #include "mydef.h"
-#include <memory>
 #include <string>
 #include <map>
 

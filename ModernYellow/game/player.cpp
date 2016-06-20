@@ -10,6 +10,9 @@
 #include "tile.h"
 #include "../sinputhandler.h"
 #include <SDL_log.h>
+#include "../font.h"
+
+extern pFont_t g_pFont;
 
 /* ==============
    Public Methods
@@ -86,6 +89,15 @@ void Player::render()
     m_pSprite->render();
 }
 
+std::shared_ptr<Tile> Player::getCurrTile() const
+{
+    return m_pSprite->getCurrTile();
+}
+
+std::shared_ptr<Tile> Player::getNextTile() const
+{
+    return m_pSprite->getNextTile();
+}
 
 void Player::setOffset(
     const int32 x /* 0 */,

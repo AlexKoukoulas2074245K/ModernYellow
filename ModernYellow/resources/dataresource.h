@@ -6,7 +6,7 @@
 #pragma once
 
 #include "resource.h"
-#include <memory>
+#include "../mydef.h"
 #include <vector>
 
 class DataResource: public Resource

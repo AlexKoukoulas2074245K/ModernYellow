@@ -3,11 +3,14 @@
    Author: Alex Koukoulas
    ====================== */
 
+#define SHOW_LEAKS
+#if (defined(_DEBUG) || defined(DEBUG)) || defined(SHOW_LEAKS)
 #include "vld.h"
+#endif
+
 #include <SDL.h>
 #include <SDL_image.h>
 #include <queue>
-#include <memory>
 
 #include "portcommon.h"
 #include "gstates/gsplay.h"
@@ -44,10 +47,10 @@ uint32 g_scale      = 1;
 uint32 g_tileSize   = 16;
 
 // Global Renderer
-SDL_Renderer* g_renderer;
+pRenderer_t g_pRenderer;
 
 // Global Font
-std::shared_ptr<Font> g_font;
+pFont_t g_pFont;
 
 /* ============================
    Internal Function Signatures
@@ -74,19 +77,21 @@ int main(int argc, char** argv)
     }
     
     // Create an SDL context window
-    auto pWindow = SDL_CreateWindow(
+    auto pWindow = std::unique_ptr<SDL_Window, void (*)(SDL_Window*)>(SDL_CreateWindow(
         gc_appTitle.c_str(), 
         SDL_WINDOWPOS_CENTERED, 
         SDL_WINDOWPOS_CENTERED, 
         g_width,
         g_height,
-        g_fullscreen ? SDL_WINDOW_FULLSCREEN : 0);
+        g_fullscreen ? SDL_WINDOW_FULLSCREEN : 0),
+        SDL_DestroyWindow);
 
     // Create the renderer based on the generated window above
-    g_renderer = SDL_CreateRenderer(
-        pWindow, 
+    g_pRenderer.reset(SDL_CreateRenderer(
+        pWindow.get(), 
         -1,
-        SDL_RENDERER_ACCELERATED | (g_vsync ? SDL_RENDERER_PRESENTVSYNC : 0));
+        SDL_RENDERER_ACCELERATED | (g_vsync ? SDL_RENDERER_PRESENTVSYNC : 0)),
+        SDL_DestroyRenderer);
     
     // Initialize PNG Loading
     auto imgFlags = IMG_INIT_PNG;
@@ -97,7 +102,7 @@ int main(int argc, char** argv)
     }
 
     // Initialize Font
-    g_font = std::make_shared<Font>();
+    g_pFont = std::make_shared<Font>();
 
     // Acquire paths
     g_savePath = SDL_GetPrefPath(gc_orgName.c_str(), gc_appTitle.c_str());
@@ -133,17 +138,15 @@ int main(int argc, char** argv)
         gstates.front()->update();        
         
         // State rendering
-        SDL_SetRenderDrawColor(g_renderer, 
+        SDL_SetRenderDrawColor(g_pRenderer.get(), 
                                RED(envcolors::EC_BLACK),
                                GREEN(envcolors::EC_BLACK), 
                                BLUE(envcolors::EC_BLACK),
                                ALPHA(envcolors::EC_BLACK));
 
-        SDL_RenderClear(g_renderer);
-        gstates.front()->render(); 
-        
-
-        SDL_RenderPresent(g_renderer);
+        SDL_RenderClear(g_pRenderer.get());
+        gstates.front()->render();        
+        SDL_RenderPresent(g_pRenderer.get());
 
         // Input frame end
         ihandler.frameEnd();
@@ -161,15 +164,13 @@ int main(int argc, char** argv)
         if (secCounter > 1000)
         {
             // Extract per sec profiling info
-            SDL_SetWindowTitle(pWindow, std::to_string(fps).c_str());
+            SDL_SetWindowTitle(pWindow.get(), std::to_string(fps).c_str());
             secCounter = 0;
             fps = 0;
         }       
     }
     
-    // Cleanup   
-    SDL_DestroyRenderer(g_renderer);
-    SDL_DestroyWindow(pWindow);
+    // Cleanup           
     SDL_Quit();
 
     return 0;

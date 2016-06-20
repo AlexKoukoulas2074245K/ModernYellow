@@ -6,7 +6,6 @@
 #pragma once
 #include "resource.h"
 #include "../mydef.h"
-#include <memory>
 #include <set>
 
 struct SDL_Texture;
@@ -68,8 +67,8 @@ private:
 
 private:
     
-    pTexture_t m_texture;
-    pSurface_t m_surface;
+    pTexture_t m_pTexture;
+    pSurface_t m_pSurface;
     std::set<uint32> m_colors;
 
 };

@@ -5,7 +5,7 @@
 
 #pragma once
 #include "resource.h"
-#include <memory>
+#include "../mydef.h"
 
 class AudioResource: public Resource
 {
