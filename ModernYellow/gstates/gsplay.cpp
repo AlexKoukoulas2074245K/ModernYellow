@@ -12,6 +12,7 @@
 #include "../game/npc.h"
 #include "../game/tile.h"
 #include "../portcommon.h"
+
 #include <SDL_render.h>
 #include <SDL_log.h>
 #include <SDL_gfxPrimitives.h>
@@ -30,21 +31,22 @@ int32 globYOffset = 0;
    Public Methods
    ============== */
 GSPlay::GSPlay():
-    GState()
+    GState(),
+    m_uiActions(false)
 {            
     auto pAtlas = castResToTex(resmanager.loadResource("tilemaps/overworldmap.png", RT_TEXTURE));
     
     auto start = SDL_GetTicks();
     m_pLevel = std::make_shared<Level>("opallet", pAtlas);    
     m_pLevel->loadNPCData(pAtlas);
-
-    SDL_Log(std::to_string(SDL_GetTicks() - start).c_str());
+    
     m_pPlayer = std::make_unique<Player>(
         m_pLevel->getTileRC(8, 14),        
         Direction::DIR_DOWN,
         m_pLevel,
         pAtlas);
-        
+    
+    SDL_Log(std::to_string(SDL_GetTicks() - start).c_str());
 }
 
 GSPlay::~GSPlay()
@@ -54,6 +56,13 @@ GSPlay::~GSPlay()
 void GSPlay::update()
 {           
     m_pPlayer->update();
+
+    if (m_pPlayer->hasUIDialog() != m_uiActions)
+    {
+        m_uiActions = m_pPlayer->hasUIDialog();
+        m_pLevel->setFrozenNpcs(m_uiActions);
+    }
+
     m_pLevel->update();
    
 
@@ -68,5 +77,9 @@ void GSPlay::render()
 {        
     m_pLevel->render();           
     m_pPlayer->render();
-    m_pLevel->renderEncOccTiles();
+
+    if (!m_uiActions)
+    {
+        m_pLevel->renderEncOccTiles();
+    }    
 }

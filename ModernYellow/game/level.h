@@ -30,7 +30,7 @@ public:
 
     void render();
 
-    void renderEncOccTiles();
+    void renderEncOccTiles();    
 
     bool isReady() const;
 
@@ -60,6 +60,8 @@ public:
         const int32 xOffset = 0, 
         const int32 yOffset = 0);
 
+    void setFrozenNpcs(const bool frozen);
+
 private:
 
     bool loadLevelTex();
@@ -68,7 +70,7 @@ private:
 
 private:
 
-    bool m_ready;
+    bool m_ready;    
     string m_name;
     tilemap_t m_tilemap;    
     anitilemap_t m_seaTiles;

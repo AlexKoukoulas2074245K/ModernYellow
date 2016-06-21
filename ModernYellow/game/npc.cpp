@@ -37,6 +37,10 @@ Npc::~Npc(){}
 
 void Npc::update()
 {
+    // Check for frozen npc (player ui actions)
+    if (isFrozen()) return;
+
+    // Check for valid level ref
     if (m_pLevelRef.expired()) return;
     auto pLevelRef = m_pLevelRef.lock();
 

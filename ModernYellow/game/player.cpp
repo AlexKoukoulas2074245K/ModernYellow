@@ -8,9 +8,11 @@
 #include "sprite.h"
 #include "npc.h"
 #include "tile.h"
+#include "uicomps/uitextbox.h"
 #include "../sinputhandler.h"
-#include <SDL_log.h>
 #include "../font.h"
+
+#include <SDL_log.h>
 
 extern pFont_t g_pFont;
 
@@ -23,7 +25,7 @@ Player::Player(
     const std::shared_ptr<const Level> pLevelRef,
     const std::shared_ptr<TextureResource>& pAtlas):
 
-    m_pLevelRef(pLevelRef)
+    m_pLevelRef(pLevelRef)    
 {
     m_pSprite = std::make_unique<Sprite>(
         PLAYER_TEX_U,
@@ -38,20 +40,67 @@ Player::~Player(){}
 
 void Player::update()
 {
+    if (hasUIDialog())
+    {
+        m_pTextbox->update();
+
+        if (m_pTextbox->isFinished())
+        {
+            m_pTextbox = nullptr;
+        }
+        return;
+    }
+
     if (ihandler.isKeyTapped(K_A))
     {
         std::shared_ptr<Npc> pNpc;
+                
         switch (m_pSprite->getDir())
         {
-            case DIR_DOWN: pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileBelow(m_pSprite->getCurrTile())); break;
-            case DIR_UP: pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileAbove(m_pSprite->getCurrTile())); break;
-            case DIR_LEFT: pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileLeftOf(m_pSprite->getCurrTile())); break;
-            case DIR_RIGHT: pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileRightOf(m_pSprite->getCurrTile())); break;
+            case DIR_DOWN:  
+            {
+                pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileBelow(m_pSprite->getCurrTile())); 
+                if (pNpc)
+                {
+                    pNpc->tryChangeDirection(DIR_UP);
+                    m_pTextbox = std::make_unique<UITextbox>(pNpc->getDialogue());                    
+                }
+            } break;
+
+            case DIR_UP:    
+            {
+                pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileAbove(m_pSprite->getCurrTile()));
+                if (pNpc)
+                {
+                    pNpc->tryChangeDirection(DIR_DOWN);
+                    m_pTextbox = std::make_unique<UITextbox>(pNpc->getDialogue());
+                }
+            } break;
+
+            case DIR_LEFT:  
+            {
+                pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileLeftOf(m_pSprite->getCurrTile())); 
+                if (pNpc)
+                {
+                    pNpc->tryChangeDirection(DIR_RIGHT);
+                    m_pTextbox = std::make_unique<UITextbox>(pNpc->getDialogue());
+                }
+            } break;
+
+            case DIR_RIGHT: 
+            {
+                pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileRightOf(m_pSprite->getCurrTile())); 
+                if (pNpc)
+                {
+                    pNpc->tryChangeDirection(DIR_LEFT);
+                    m_pTextbox = std::make_unique<UITextbox>(pNpc->getDialogue());
+                }
+            } break;
         }
         
         if (pNpc)
-        {
-            SDL_Log(pNpc->getDialogue().c_str());
+        {            
+            m_pTextbox = std::make_unique<UITextbox>(pNpc->getDialogue());               
         }
     }
 
@@ -74,7 +123,7 @@ void Player::update()
                 (m_pSprite->getDir() == DIR_UP    && !ihandler.isKeyDown(DIR_UP))   ||
                 (m_pSprite->getDir() == DIR_LEFT  && !ihandler.isKeyDown(DIR_LEFT)) ||
                 (m_pSprite->getDir() == DIR_RIGHT && !ihandler.isKeyDown(DIR_RIGHT)))
-            {
+            {                
                 m_pSprite->setState(Sprite::S_IDLE);
                 m_pSprite->setWalkingAnimation(false);
             }
@@ -87,6 +136,16 @@ void Player::update()
 void Player::render()
 {
     m_pSprite->render();
+
+    if (hasUIDialog())
+    {
+        m_pTextbox->render();
+    }
+}
+
+bool Player::hasUIDialog() const
+{
+    return m_pTextbox && !m_pTextbox->isFinished();
 }
 
 std::shared_ptr<Tile> Player::getCurrTile() const

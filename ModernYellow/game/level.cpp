@@ -42,7 +42,7 @@ Level::Level(
     m_rows(0),
     m_cols(0),
     m_xOffset(0),
-    m_yOffset(0)
+    m_yOffset(0)   
 {    
     if (!loadLevelTex()) return;
     if (!readLevelData()) return;            
@@ -253,6 +253,14 @@ void Level::setOffset(
     for (const auto& npc : m_npcs)
     {
         npc->setOffset(xOffset, yOffset);
+    }
+}
+
+void Level::setFrozenNpcs(const bool frozen)
+{
+    for (auto npc: m_npcs)
+    {
+        npc->setFrozen(frozen);
     }
 }
 

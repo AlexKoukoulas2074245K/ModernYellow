@@ -8,6 +8,7 @@
 #include "resources/dataresource.h"
 #include "resources/textureresource.h"
 #include "strutils.h"
+
 #include <SDL_render.h>
 
 extern pRenderer_t g_pRenderer;

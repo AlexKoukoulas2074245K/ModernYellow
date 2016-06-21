@@ -6,6 +6,7 @@
 #pragma once
 #include "../portcommon.h"
 #include "../mydef.h"
+
 #include <vector>
 
 class TextureResource;

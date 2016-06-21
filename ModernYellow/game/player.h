@@ -10,6 +10,7 @@ class Sprite;
 class Tile;
 class Level;
 class TextureResource;
+class UIComponent;
 class Player final
 {
 public:
@@ -23,8 +24,10 @@ public:
     ~Player();
 
     void update();
-
+    
     void render();
+
+    bool hasUIDialog() const;
 
     std::shared_ptr<Tile> getCurrTile() const;
 
@@ -51,5 +54,6 @@ private:
 
     std::shared_ptr<const Level> m_pLevelRef;
     std::unique_ptr<Sprite> m_pSprite;
+    std::unique_ptr<UIComponent> m_pTextbox;    
 
 };

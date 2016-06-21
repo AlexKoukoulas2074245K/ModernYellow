@@ -4,10 +4,10 @@
    ====================== */
 
 #pragma once
+#include "mydef.h"
 
 #include <SDL_events.h>
 #include <unordered_map>
-#include "mydef.h"
 
 // Instance retrieval convenience macro
 #define ihandler SInputHandler::instance()

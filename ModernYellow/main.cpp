@@ -8,10 +8,6 @@
 #include "vld.h"
 #endif
 
-#include <SDL.h>
-#include <SDL_image.h>
-#include <queue>
-
 #include "portcommon.h"
 #include "gstates/gsplay.h"
 #include "mydef.h"
@@ -20,6 +16,11 @@
 #include "resources/sresmanager.h"
 #include "strutils.h"
 #include "font.h"
+
+#include <SDL.h>
+#include <SDL_image.h>
+#include <queue>
+
 
 using std::string;
 

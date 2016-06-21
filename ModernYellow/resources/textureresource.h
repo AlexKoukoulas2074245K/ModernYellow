@@ -6,6 +6,7 @@
 #pragma once
 #include "resource.h"
 #include "../mydef.h"
+
 #include <set>
 
 struct SDL_Texture;
@@ -39,8 +40,8 @@ public:
     void darken();
 
     std::shared_ptr<TextureResource> getSubTexture(
-        const uint32 x,
-        const uint32 y,
+        const uint32 tu,
+        const uint32 tv,
         const uint32 width, 
         const uint32 height) const;
 

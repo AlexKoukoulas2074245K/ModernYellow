@@ -7,8 +7,10 @@
 
 #include "gstate.h"
 #include "../mydef.h"
+
 #include <vector>
 
+class UIBox;
 class Level;
 class TextureResource;
 class Player;
@@ -27,5 +29,7 @@ public:
 private:
 
     std::shared_ptr<Level> m_pLevel;
-    std::unique_ptr<Player> m_pPlayer;    
+    std::unique_ptr<Player> m_pPlayer;       
+    bool m_uiActions;
+
 };

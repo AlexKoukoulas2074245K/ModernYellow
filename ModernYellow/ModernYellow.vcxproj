@@ -81,6 +81,9 @@
     <ClCompile Include="game\player.cpp" />
     <ClCompile Include="game\sprite.cpp" />
     <ClCompile Include="game\tile.cpp" />
+    <ClCompile Include="game\uicomps\uiboolean.cpp" />
+    <ClCompile Include="game\uicomps\uicomponent.cpp" />
+    <ClCompile Include="game\uicomps\uitextbox.cpp" />
     <ClCompile Include="gstates\gsplay.cpp" />
     <ClCompile Include="gstates\gstate.cpp" />
     <ClCompile Include="main.cpp" />
@@ -99,6 +102,9 @@
     <ClInclude Include="game\player.h" />
     <ClInclude Include="game\sprite.h" />
     <ClInclude Include="game\tile.h" />
+    <ClInclude Include="game\uicomps\uiboolean.h" />
+    <ClInclude Include="game\uicomps\uicomponent.h" />
+    <ClInclude Include="game\uicomps\uitextbox.h" />
     <ClInclude Include="strutils.h" />
     <ClInclude Include="gstates\gsplay.h" />
     <ClInclude Include="gstates\gstate.h" />

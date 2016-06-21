@@ -6,6 +6,7 @@
 #pragma once
 
 #include "sprite.h"
+
 #include <string>
 
 using std::string;
@@ -32,7 +33,7 @@ public:
 
     int isTrainer() const;
 
-    void update();    
+    void update() override; 
 
 private:
 

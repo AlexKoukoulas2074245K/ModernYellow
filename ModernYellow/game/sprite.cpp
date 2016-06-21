@@ -9,6 +9,7 @@
 #include "../sinputhandler.h"
 #include "../portcommon.h"
 #include "../resources/textureresource.h"
+
 #include <array>
 #include <unordered_map>
 #include <SDL_render.h>
@@ -44,8 +45,13 @@ struct Sprite::spriteImpl
     uint32 m_velocity;
     
     bool m_walkingAnimation;
+    bool m_frozen;
+
     SpriteState m_currState;    
 };
+
+uint32 Sprite::getCurrFrame() const { return m_impl->m_currFrame; }
+uint32 Sprite::getCurrDelay() const { return m_impl->m_frameTime; }
 
 /* ==============
    Public Methods
@@ -86,7 +92,9 @@ Sprite::Sprite(
 
     m_impl->m_currState = S_IDLE;
 
-    m_impl->m_walkingAnimation = false;
+    m_impl->m_walkingAnimation = false;    
+    
+    m_impl->m_frozen = false;
 }
 
 Sprite::~Sprite()
@@ -155,6 +163,11 @@ void Sprite::tryChangeDirection(const Direction dir)
 
 void Sprite::update()
 {   
+    // Frozen sprite (player ui actions perhaps) stops the update
+    // until the sprite is defrozen
+    if (m_impl->m_frozen) return;
+
+
     // Sprite movement works the following way: 
     // When a tryMove order is given, the sprite finds
     // its next tile (target tile) sets its state to MOVING 
@@ -167,9 +180,10 @@ void Sprite::update()
     // (i.e. the movement will continue during the next frame). 
     // The animation resets when the sprite reaches its target tile
     // and in order to avoid the animation resetting mid-movement this
-    // reordering must happen
+    // reordering must happen    
     updateAnimation();
-    updatePosition();        
+    updatePosition();
+    
 }
 
 void Sprite::updateAnimation()
@@ -251,6 +265,11 @@ void Sprite::render()
         &rendRect);
 }
 
+bool Sprite::isFrozen() const
+{
+    return m_impl->m_frozen;
+}
+
 const std::shared_ptr<Tile>& Sprite::getCurrTile() const
 {
     return m_impl->m_pCurrTile;
@@ -281,6 +300,15 @@ uint32 Sprite::getY() const
     return m_impl->m_worldPos.y;
 }
 
+void Sprite::setFrozen(const bool frozen)
+{
+    m_impl->m_frozen = frozen;
+}
+
+void Sprite::setWalkingAnimation(const bool walkingAnimation)
+{
+    m_impl->m_walkingAnimation = walkingAnimation;
+}
 
 void Sprite::setState(const SpriteState state)
 {
@@ -295,9 +323,10 @@ void Sprite::setOffset(
     m_impl->m_yRendOffset = yOffset;
 }
 
-void Sprite::setWalkingAnimation(const bool walkingAnimation)
+void Sprite::resetFrames()
 {
-    m_impl->m_walkingAnimation = walkingAnimation;
+    m_impl->m_currFrame = 0;
+    m_impl->m_frameTime = SPRITE_ANI_DELAY;
 }
 
 /* ===============

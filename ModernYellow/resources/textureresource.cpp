@@ -4,8 +4,9 @@
    ====================== */
 
 #include "textureresource.h"
-#include <SDL_image.h>
 #include "../portcommon.h"
+
+#include <SDL_image.h>
 
 extern string g_texPath;
 extern pRenderer_t g_pRenderer;
@@ -141,8 +142,8 @@ void TextureResource::darken()
 }
 
 std::shared_ptr<TextureResource> TextureResource::getSubTexture(
-    const uint32 x,
-    const uint32 y,
+    const uint32 tu,
+    const uint32 tv,
     const uint32 width,
     const uint32 height) const
 {
@@ -150,7 +151,7 @@ std::shared_ptr<TextureResource> TextureResource::getSubTexture(
         DEFAULT_TILE_SIZE,
         DEFAULT_TILE_SIZE);
 
-    SDL_Rect texcoords{x, y, width, height};
+    SDL_Rect texcoords{tu, tv, width, height};
     SDL_BlitSurface(getSurface().get(), &texcoords, pTexRes->getSurface().get(), nullptr);
 
     pTexRes->compileTexture();

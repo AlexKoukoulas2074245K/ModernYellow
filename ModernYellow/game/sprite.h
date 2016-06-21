@@ -11,8 +11,7 @@ class Level;
 class Tile;
 class Sprite
 {
-public:
-
+public:    
     enum SpriteState
     {
         S_MOVING, S_DIRFREEZE, S_IDLE
@@ -22,9 +21,12 @@ public:
 
     static const uint32 SPRITE_MAX_FRAMES_PER_ANI   = 4U;
     static const uint32 SPRITE_MAX_CHANGE_DIR_DELAY = 4U;
-    static const uint32 SPRITE_ANI_DELAY            = 8U;
+    static const uint32 SPRITE_ANI_DELAY            = 7U;
 
 public:
+    // TEMP
+    uint32 getCurrFrame() const;
+    uint32 getCurrDelay() const;
 
     Sprite(        
         const uint32 texU, 
@@ -44,6 +46,8 @@ public:
 
     virtual void render();
     
+    bool isFrozen() const;
+
     const std::shared_ptr<Tile>& getCurrTile() const;
 
     const std::shared_ptr<Tile>& getNextTile() const;
@@ -56,6 +60,8 @@ public:
 
     uint32 getY() const;
 
+    void setFrozen(const bool frozen);
+
     void setWalkingAnimation(const bool walkingAnimation);
     
     void setState(const SpriteState state);
@@ -63,6 +69,8 @@ public:
     void setOffset(
         const int32 xOffset = 0,
         const int32 yOffset = 0);
+    
+    void resetFrames();
 
 private:
 

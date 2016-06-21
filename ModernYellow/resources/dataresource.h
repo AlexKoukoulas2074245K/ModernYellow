@@ -7,6 +7,7 @@
 
 #include "resource.h"
 #include "../mydef.h"
+
 #include <vector>
 
 class DataResource: public Resource
