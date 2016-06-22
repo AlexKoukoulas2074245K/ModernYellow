@@ -10,6 +10,8 @@
 #include "overworldobject.h"
 #include "tile.h"
 #include "uicomps/uitextbox.h"
+#include "../resources/sresmanager.h"
+#include "../resources/textureresource.h"
 #include "../sinputhandler.h"
 #include "../font.h"
 
@@ -23,10 +25,14 @@ extern pFont_t g_pFont;
 Player::Player(
     const std::shared_ptr<Tile> pInitTile,
     const Direction initDir,
-    const std::shared_ptr<const Level> pLevelRef,
+    const std::shared_ptr<Level> pLevelRef,
     const std::shared_ptr<TextureResource>& pAtlas):
 
-    m_pLevelRef(pLevelRef)    
+    m_pLevelRef(pLevelRef),
+    m_firstTileAfterWarp(false),
+    m_warpAfterCol(0),
+    m_warpAfterRow(0),    
+    m_warping(false)
 {
     m_pSprite = std::make_unique<Sprite>(
         PLAYER_TEX_U,
@@ -51,6 +57,29 @@ void Player::update()
         }
         return;
     }
+    if (m_warping)
+    {        
+        if (--m_warpTimer <= 0)
+        {
+            m_warpTimer = Level::LEVEL_WARP_LEVEL_DELAY;
+            m_pSprite->darken();
+        }
+
+        if (m_pLevelRef->getWarpLevel() == Level::LEVEL_WARP_LEVEL_MAX)
+        {            
+            m_pSprite->reloadFrames(
+                PLAYER_TEX_U, 
+                PLAYER_TEX_V, 
+                castResToTex(resmanager.loadResource("tilemaps/overworldmap.png", RT_TEXTURE)));
+            m_pSprite->teleportTo(m_pLevelRef->getTileRC(m_warpAfterCol, m_warpAfterRow));           
+            m_firstTileAfterWarp = true;
+            m_warping = false;
+            m_pLevelRef->resetWarping();
+        }
+        
+        return;
+    }
+        
 
     if (ihandler.isKeyTapped(K_A))
     {        
@@ -149,7 +178,28 @@ void Player::update()
         }
     }
 
+    auto prevTile = m_pSprite->getCurrTile();
+
     m_pSprite->update();
+
+    auto currTile = m_pSprite->getCurrTile();
+
+    // Player specific on step
+    if (prevTile != currTile)
+    {        
+        m_firstTileAfterWarp = false;
+        auto pWarp = currTile->getWarp();
+        if (currTile->getWarp() && !m_firstTileAfterWarp)
+        {            
+            m_warping = true;
+            m_warpAfterDir = pWarp->forcedDir == -1 ? 
+                m_pSprite->getDir() : (Direction) pWarp->forcedDir;
+
+            m_warpAfterCol = pWarp->col;
+            m_warpAfterRow = pWarp->row;
+            m_pLevelRef->startWarpTo(currTile->getWarp());
+        }        
+    }
 }
 
 void Player::render()

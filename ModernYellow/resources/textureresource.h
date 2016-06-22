@@ -11,6 +11,7 @@
 
 struct SDL_Texture;
 struct SDL_Surface;
+struct SDL_Rect;
 class TextureResource: public Resource
 {        
     friend class SResManager;
@@ -38,6 +39,8 @@ public:
 
     /* Darkens the surface (and as the result the texture) one step */
     void darken();
+
+    void darken(const SDL_Rect& rect);
 
     std::shared_ptr<TextureResource> getSubTexture(
         const uint32 tu,

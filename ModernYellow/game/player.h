@@ -18,7 +18,7 @@ public:
     Player(
         const std::shared_ptr<Tile> pInitTile,
         const Direction initDir,
-        const std::shared_ptr<const Level> pLevelRef,
+        const std::shared_ptr<Level> pLevelRef,
         const std::shared_ptr<TextureResource>& pAtlas);
 
     ~Player();
@@ -52,8 +52,13 @@ private:
 
 private:
 
-    std::shared_ptr<const Level> m_pLevelRef;
+    std::shared_ptr<Level> m_pLevelRef;
     std::unique_ptr<Sprite> m_pSprite;
     std::unique_ptr<UIComponent> m_pTextbox;    
+    uint32 m_warpAfterCol, m_warpAfterRow;
+    Direction m_warpAfterDir;
+    int32 m_warpTimer;
+    bool m_firstTileAfterWarp;
+    bool m_warping;
 
 };

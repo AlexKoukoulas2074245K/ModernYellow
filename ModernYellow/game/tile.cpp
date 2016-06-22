@@ -85,6 +85,19 @@ void Tile::render(const int32 xRendOffset, const int32 yRendOffset)
         &rendArea);
 }
 
+void Tile::darken()
+{
+    for (const auto& frame: m_frames)
+    {
+        frame->darken();
+    }
+}
+
+std::shared_ptr<Warp> Tile::getWarp() const
+{
+    return m_warp;
+}
+
 uint16 Tile::getTileType() const
 {
     return m_tileType;
@@ -123,6 +136,11 @@ bool Tile::isOccupied() const
 bool Tile::hasSeaTex() const
 {
     return m_frames.size() == TILE_SEA_MAX_FRAMES;
+}
+
+void Tile::addWarp(std::shared_ptr<Warp> warp)
+{
+    m_warp = warp;
 }
 
 void Tile::setOccupied(const bool occupied)

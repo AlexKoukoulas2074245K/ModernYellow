@@ -12,6 +12,8 @@
 #include "../resources/dataresource.h"
 #include "../resources/textureresource.h"
 #include "../strutils.h"
+
+#include <SDL_timer.h>
 #include <SDL_log.h>
 #include <SDL_render.h>
 #include <SDL_assert.h>
@@ -40,7 +42,9 @@ Level::Level(
 
     m_name(levelName),
     m_pOverworldAtlas(pAtlas),
-    m_ready(false),
+    m_ready(false),    
+    m_warpLevel(0),
+    m_warpLevelDelay(LEVEL_WARP_LEVEL_DELAY),
     m_rows(0),
     m_cols(0),
     m_xOffset(0),
@@ -49,6 +53,7 @@ Level::Level(
     if (!loadLevelTex()) return;
     if (!readLevelData()) return;            
     if (!readLevelObjects()) return;
+    if (!readLevelWarps()) return;
 
     // Calculate level area
     m_levelArea.x = 0;
@@ -62,6 +67,65 @@ Level::~Level() = default;
 
 void Level::update()
 {
+    if (m_warpLevel > 0 && --m_warpLevelDelay <= 0)
+    {
+        m_warpLevelDelay = LEVEL_WARP_LEVEL_DELAY;
+        m_warpLevel++;
+       
+        auto normXOffset = -m_xOffset / (int32)g_scale;
+        auto normYOffset = -m_yOffset / (int32)g_scale;
+
+        SDL_Rect darkenArea = {};        
+        auto stdWidth = int32(GAME_COLS * DEFAULT_TILE_SIZE);
+        auto stdHeight = int32(GAME_ROWS * DEFAULT_TILE_SIZE);
+
+        darkenArea.x = normXOffset < 0 || normXOffset + stdWidth > m_pLevelTex->getSurface()->w ? 0 : normXOffset;
+        darkenArea.y = normYOffset < 0 || normYOffset + stdHeight> m_pLevelTex->getSurface()->h ? 0 : normYOffset;
+        darkenArea.w = stdWidth;
+        darkenArea.h = stdHeight;
+               
+#if !defined(DEBUG) && !defined(_DEBUG)
+        m_pLevelTex->darken(darkenArea);        
+#endif
+
+        for (const auto& npc: m_npcs)
+        {
+            npc->darken();
+        }
+
+        for (const auto& owo: m_owobjects)
+        {
+            owo->darken();
+        }
+
+        for (const auto& seaTile : m_seaTiles)
+        {
+            seaTile->darken();
+        }
+
+        for (const auto& flowerTile : m_flowerTiles)
+        {
+            flowerTile->darken();
+        }
+
+        if (m_warpLevel == LEVEL_WARP_LEVEL_MAX)
+        {
+            if (!loadLevelTex()) return;
+            if (!readLevelData()) return;
+            if (!readLevelObjects()) return;
+            if (!readLevelWarps()) return;
+            if (!loadNPCData()) return;
+
+            // Calculate level area
+            m_levelArea.x = 0;
+            m_levelArea.y = 0;
+            m_levelArea.w = m_pLevelTex->getSurface().get()->w * g_scale;
+            m_levelArea.h = m_pLevelTex->getSurface().get()->h * g_scale;
+            m_ready = true;
+
+        }
+    }
+
     for (const auto& npc : m_npcs)
     {
         npc->update();
@@ -144,13 +208,27 @@ void Level::renderEncOccTiles()
     }
 }
 
+void Level::startWarpTo(std::shared_ptr<Warp> destination)
+{
+    setFrozenNpcs(true);
+    m_warpLevel = 1;
+    m_name = destination->location;            
+}
+
 bool Level::isReady() const
 {
     return m_ready;
 }
 
+int32 Level::getWarpLevel() const
+{
+    return m_warpLevel;
+}
+
 bool Level::loadNPCData()
 {
+    m_npcs.clear();
+
     // Load the npc data resource
     auto pNPCResource = castResToData(resmanager.loadResource("npcs.dat", RT_DATA));
 
@@ -302,6 +380,11 @@ void Level::setFrozenNpcs(const bool frozen)
     }
 }
 
+void Level::resetWarping()
+{
+    m_warpLevel = 0;
+}
+
 /* ===============
    Private Methods
    =============== */
@@ -315,6 +398,8 @@ bool Level::readLevelData()
 {   
     // Load the dataresource 
     auto pLevelResource = castResToData(resmanager.loadResource("levels/" + m_name + ".pkm", RT_DATA));
+
+    m_tilemap.clear();
 
     // Get vector of strings
     auto levelData = pLevelResource->getContent();
@@ -377,6 +462,8 @@ bool Level::readLevelData()
         }
     }
 
+    if (m_name[0] == 'i') return true;
+
     // Add the extra needed sea tiles to create the illusion of
     // the moving current in the sea tiles
     std::set<std::shared_ptr<Tile>> perimetricalSeaTiles;
@@ -427,13 +514,15 @@ bool Level::readLevelObjects()
     
     if (!pOWOResource) return false;
 
-    // Get Line by Line content
-    auto pContent = pOWOResource->getContent();
+    m_owobjects.clear();
 
-    for (size_t lineIndex = 0; lineIndex < pContent.size(); lineIndex += 2)
+    // Get Line by Line content
+    auto content = pOWOResource->getContent();
+
+    for (size_t lineIndex = 0; lineIndex < content.size(); lineIndex += 2)
     {
-        const auto& line = pContent[lineIndex];
-        const auto& dialogue = pContent[lineIndex + 1];
+        const auto& line = content[lineIndex];
+        const auto& dialogue = content[lineIndex + 1];
 
         if (string_utils::startsWith(line, m_name))
         {
@@ -455,6 +544,83 @@ bool Level::readLevelObjects()
                 cuttable));
         }
     }    
+
+    return true;
+}
+
+bool Level::readLevelWarps()
+{
+    auto warpResource = castResToData(resmanager.loadResource("warps.dat", RT_DATA));
+
+    auto content = warpResource->getContent();
+
+    for (const auto& line: content)
+    {
+        auto vecComps    = string_utils::split(line, '>');
+        auto vecLhsComps = string_utils::split(vecComps[0], ' ');
+        auto vecRhsComps = string_utils::split(vecComps[1], ' ');
+        
+        auto lhsLocation = vecLhsComps[0];
+        auto rhsLocation = vecRhsComps[0];
+            
+        if (lhsLocation != m_name && rhsLocation != m_name) continue;
+
+        auto lhsCoords = string_utils::split(vecLhsComps[1], ',');
+        auto rhsCoords = string_utils::split(vecRhsComps[1], ',');
+
+        auto lhsLocCol = std::atoi(lhsCoords[0].c_str());
+        auto lhsLocRow = std::atoi(lhsCoords[1].c_str());
+
+        auto rhsLocCol = std::atoi(rhsCoords[0].c_str());
+        auto rhsLocRow = std::atoi(rhsCoords[1].c_str());
+
+        auto lhsWarp      = std::make_shared<Warp>();
+        lhsWarp->location = lhsLocation;
+        lhsWarp->col      = lhsLocCol;
+        lhsWarp->row      = lhsLocRow;
+
+        auto rhsWarp      = std::make_shared<Warp>();
+        rhsWarp->location = rhsLocation;
+        rhsWarp->col      = rhsLocCol;
+        rhsWarp->row      = rhsLocRow;
+
+        // Attach a warp (to the target location) to the respective
+        // tile found
+        if (lhsLocation == m_name)
+        {            
+            if (lhsLocation[0] == 'i' && rhsLocation[0] == 'o')                 
+            {
+                rhsWarp->forcedDir = DIR_DOWN;
+            }
+            else if (lhsLocation[0] == 'o' && rhsLocation[0] == 'i') 
+            {
+                rhsWarp->forcedDir = DIR_UP;
+            }
+            else 
+            {
+                rhsWarp->forcedDir = -1;
+            }
+
+            getTileRC(lhsWarp->col, lhsWarp->row)->addWarp(rhsWarp);
+        }
+        else
+        {
+            if (rhsLocation[0] == 'i' && lhsLocation[0] == 'o')
+            {
+                lhsWarp->forcedDir = DIR_DOWN;
+            }
+            else if (rhsLocation[0] == 'o' && lhsLocation[0] == 'i')
+            {
+                lhsWarp->forcedDir = DIR_UP;
+            }                            
+            else 
+            {
+                lhsWarp->forcedDir = -1;
+            }
+
+            getTileRC(rhsWarp->col ,rhsWarp->row)->addWarp(lhsWarp);
+        }
+    }
 
     return true;
 }

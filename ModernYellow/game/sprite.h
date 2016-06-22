@@ -71,6 +71,15 @@ public:
         const int32 yOffset = 0);
     
     void resetFrames();
+    
+    void darken();
+
+    void reloadFrames(
+        const int32 texU,
+        const int32 texV,
+        const std::shared_ptr<TextureResource>& pAtlas);
+
+    void teleportTo(std::shared_ptr<Tile> tile);
 
 private:
 

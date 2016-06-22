@@ -10,6 +10,7 @@
 #include <vector>
 
 class TextureResource;
+struct  Warp;
 class Tile final
 {
 public:
@@ -34,6 +35,8 @@ public:
 
     void render(const int32 xRendOffset, const int32 yRendOffset);
 
+    std::shared_ptr<Warp> getWarp() const;
+
     uint16 getTileType() const;
     
     int32 getX() const;
@@ -44,15 +47,20 @@ public:
 
     uint32 getCol() const;
 
+
     bool isWalkable() const;
     
     bool isOccupied() const;
 
     bool hasSeaTex() const;
   
+    void addWarp(std::shared_ptr<Warp> warp);
+
     void setOccupied(const bool occupied);
 
     void addSeaTile();
+
+    void darken();
 
 private:
 
@@ -76,6 +84,7 @@ private:
     uint32 m_row;    
     bool m_occupied;      
     std::vector<std::shared_ptr<TextureResource>> m_frames;
+    std::shared_ptr<Warp> m_warp;
     bool m_seaCurrentLeft;
     uint32 m_seaCurrentDelay;
     int32  m_seaCurrentOffset;

@@ -108,14 +108,26 @@ void TextureResource::swapColor(const uint32 src, const uint32 dst)
 
 void TextureResource::darken()
 {
+    SDL_Rect r = {};
+    r.x = 0;
+    r.y = 0;
+    r.w = m_pSurface->w;
+    r.h = m_pSurface->h;
+
+    darken(r);
+}
+
+
+void TextureResource::darken(const SDL_Rect& rect)
+{
     if (SDL_MUSTLOCK(m_pSurface.get()))
     {
         SDL_LockSurface(m_pSurface.get());
     }
 
-    for (int y = 0; y < m_pSurface->h; ++y)
+    for (int32 y = rect.y; y < rect.y + rect.h; ++y)
     {
-        for (int x = 0; x < m_pSurface->w; ++x)
+        for (int32 x = rect.x; x < rect.x + rect.w; ++x)
         {
             // Grab curr pixel
             uint32 currPixel = getPixelAt(x, y);
@@ -224,7 +236,7 @@ uint32 TextureResource::getPixelAt(const uint32 x, const uint32 y) const
     int bpp = m_pSurface->format->BytesPerPixel;
     /* Here p is the address to the pixel we want to retrieve */
     Uint8 *p = (Uint8 *) m_pSurface->pixels + y * m_pSurface->pitch + x * bpp;
-
+    
     switch (bpp) {
     case 1:
         return *p;

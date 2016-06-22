@@ -28,6 +28,8 @@ public:
 
     void render();
 
+    void darken();
+
     const std::string& getDialogue() const;
     
     std::shared_ptr<Tile> getCurrTile() const;

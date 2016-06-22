@@ -7,9 +7,18 @@
 #include "../portcommon.h"
 #include "../mydef.h"
 
+#include <unordered_map>
 #include <vector>
 
 using std::string;
+
+struct Warp
+{
+    int32 forcedDir;
+    string location;
+    uint32 col, row;
+};
+
 class Tile;
 class TextureResource;
 class Npc;
@@ -17,11 +26,18 @@ class OWObject;
 class Level: public std::enable_shared_from_this<Level>
 {    
 public:
+
     using tilemap_t = std::vector<std::vector<std::shared_ptr<Tile>>>;
     using anitilemap_t = std::vector<std::shared_ptr<Tile>>;
     using npcs_t = std::vector<std::shared_ptr<Npc>>;
-    using owobjects_t = std::vector<std::shared_ptr<OWObject>>;
+    using owobjects_t = std::vector<std::shared_ptr<OWObject>>;    
 
+public:
+
+    static const uint32 LEVEL_WARP_LEVEL_DELAY = 8;
+    static const uint32 LEVEL_WARP_LEVEL_MAX = 5;
+
+public:
     explicit Level(
         const string& levelName, 
         const std::shared_ptr<TextureResource>& pAtlas);
@@ -34,12 +50,16 @@ public:
 
     void renderEncOccTiles();    
 
+    void startWarpTo(std::shared_ptr<Warp> destination);
+    
     bool isReady() const;
+
+    int getWarpLevel() const;
 
     // Needs to be called after Level construction, as there is use
     // of shared_from_this and during construction no shared_ptr is 
     // pointing to this instance
-    bool loadNPCData();
+    bool loadNPCData();    
     
     std::shared_ptr<Npc> getNpcAt(const std::shared_ptr<Tile>& tile) const;
 
@@ -68,6 +88,8 @@ public:
 
     void setFrozenNpcs(const bool frozen);
 
+    void resetWarping();
+
 private:
 
     bool loadLevelTex();
@@ -75,6 +97,8 @@ private:
     bool readLevelData();    
 
     bool readLevelObjects();
+
+    bool readLevelWarps();
 
 private:
 
@@ -95,4 +119,7 @@ private:
     SDL_Rect m_levelArea;
     uint32 m_rows, m_cols;
     int32 m_xOffset, m_yOffset;
+
+    int32 m_warpLevelDelay;
+    int m_warpLevel;
 };

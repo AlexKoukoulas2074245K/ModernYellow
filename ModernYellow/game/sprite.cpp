@@ -329,6 +329,34 @@ void Sprite::resetFrames()
     m_impl->m_frameTime = SPRITE_ANI_DELAY;
 }
 
+void Sprite::darken()
+{
+    auto anim = m_impl->m_anims[m_impl->m_currDir];
+    auto frame = anim[m_impl->m_currFrame];
+    frame->darken();
+}
+
+void Sprite::reloadFrames(
+    const int32 texU, 
+    const int32 texV,
+    const std::shared_ptr<TextureResource>& pAtlas)
+{
+    m_impl->m_anims.clear();
+    loadAnimations(texU, texV, pAtlas);
+}
+
+void Sprite::teleportTo(std::shared_ptr<Tile> tile)
+{
+    m_impl->m_pCurrTile = tile;
+    m_impl->m_pNextTile = tile;
+    m_impl->m_pCurrTile->setOccupied(true);
+
+    m_impl->m_worldPos.x = m_impl->m_pCurrTile->getX();
+    m_impl->m_worldPos.y = m_impl->m_pCurrTile->getY();
+    m_impl->m_worldPos.w = g_tileSize;
+    m_impl->m_worldPos.h = g_tileSize;
+}
+
 /* ===============
    Private Methods
    =============== */

@@ -64,6 +64,11 @@ void OWObject::render()
     }    
 }
 
+void OWObject::darken()
+{
+    m_pTex->darken();
+}
+
 const std::string& OWObject::getDialogue() const
 {
     return m_dialogue;

@@ -35,18 +35,23 @@ public:
 
     void update() override; 
 
+    void darken();
+
 private:
 
     static const uint32 NPC_FLAG_DYNAMIC = 1 << 0;
     static const uint32 NPC_FLAG_TRAINER = 1 << 1;
 
+    static const uint32 NPC_STATIC_RESET_DELAY  = 120;
     static const uint32 NPC_MOVE_DECISION_DELAY = 200;
 
 private:
     
     uint32 m_flags;
-    uint32 m_decisionTimer;
+    mutable uint32 m_decisionTimer;
+    mutable uint32 m_staticRestTimer;
     string m_dialogue;
     std::weak_ptr<const Level> m_pLevelRef;
+    Direction m_initDir;
     
 };

@@ -27,6 +27,9 @@ using pFont_t     = std::shared_ptr<Font>;
 const uint32 BITS_PER_PIXEL = 32U;
 const uint32 DEFAULT_TILE_SIZE = 16U;
 
+const uint32 GAME_COLS = 10U;
+const uint32 GAME_ROWS = 9U;
+
 #define RED(col)   ((col >> 0)  & 0xFF)
 #define GREEN(col) ((col >> 8)  & 0xFF) 
 #define BLUE(col)  ((col >> 16) & 0xFF)

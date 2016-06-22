@@ -23,9 +23,12 @@ Npc::Npc(
     const string& dialogue):
 
     Sprite(texU, texV, pInitTile, initDir, pLevelRef, pAtlas), 
+    m_initDir(initDir),
     m_pLevelRef(pLevelRef),
     m_decisionTimer(NPC_MOVE_DECISION_DELAY),
-    m_dialogue(dialogue)
+    m_dialogue(dialogue),
+    m_staticRestTimer(0U),
+    m_flags(0U)
 {
     if (movingNpc) m_flags |= NPC_FLAG_DYNAMIC;
     if (isTrainer) m_flags |= NPC_FLAG_TRAINER;    
@@ -73,11 +76,26 @@ void Npc::update()
             }
         }
     }
+    else if (!isDynamic())
+    {
+        if (--m_staticRestTimer <= 0)
+        {
+            m_staticRestTimer = NPC_STATIC_RESET_DELAY;
+            tryChangeDirection(m_initDir);
+        }
+    }
+
     Sprite::update();
+}
+
+void Npc::darken()
+{
+    Sprite::darken();
 }
 
 const string& Npc::getDialogue() const
 {
+    m_staticRestTimer = NPC_STATIC_RESET_DELAY;
     return m_dialogue;
 }
 
