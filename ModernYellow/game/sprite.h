@@ -29,8 +29,8 @@ public:
     uint32 getCurrDelay() const;
 
     Sprite(        
-        const uint32 texU, 
-        const uint32 texV,
+        const int32 texU, 
+        const int32 texV,
         const std::shared_ptr<Tile> pInitTile,
         const Direction initDir,
         const std::shared_ptr<const Level> pLevelRef,
@@ -79,13 +79,13 @@ private:
     void updatePosition();
 
     void loadAnimations(
-        const uint32 texU, 
-        const uint32 texV,
+        const int32 texU, 
+        const int32 texV,
         const std::shared_ptr<TextureResource>& pAtlas);
 
     void advanceUVs(
-        uint32& texU,
-        uint32& texV,
+        int32& texU,
+        int32& texV,
         const uint32 atlasWidth);
 
 protected:

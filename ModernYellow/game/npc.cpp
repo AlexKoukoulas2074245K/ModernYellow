@@ -12,8 +12,8 @@
    Public Methods
    ============== */
 Npc::Npc(
-    const uint32 texU,
-    const uint32 texV,
+    const int32 texU,
+    const int32 texV,
     const std::shared_ptr<Tile> pInitTile,
     const Direction initDir,
     const std::shared_ptr<const Level> pLevelRef,

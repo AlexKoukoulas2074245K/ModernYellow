@@ -38,7 +38,7 @@ GSPlay::GSPlay():
     
     auto start = SDL_GetTicks();
     m_pLevel = std::make_shared<Level>("opallet", pAtlas);    
-    m_pLevel->loadNPCData(pAtlas);
+    m_pLevel->loadNPCData();
     
     m_pPlayer = std::make_unique<Player>(
         m_pLevel->getTileRC(8, 14),        

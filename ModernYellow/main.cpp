@@ -46,6 +46,8 @@ uint32 g_sfxVol     = 1;
 uint32 g_musicVol   = 1;
 uint32 g_scale      = 1;
 uint32 g_tileSize   = 16;
+string g_playerName = "Ash";
+string g_rivalName  = "Garry";
 
 // Global Renderer
 pRenderer_t g_pRenderer;

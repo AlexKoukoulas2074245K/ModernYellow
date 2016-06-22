@@ -13,6 +13,8 @@
 
 extern uint32 g_scale;
 extern pFont_t g_pFont;
+extern string g_playerName;
+extern string g_rivalName;
 
 /* ==============
    Public Methods
@@ -205,8 +207,10 @@ void UITextbox::parseDialogue(const string& text, dialogue_t& outDialogue)
 
         auto vecSentences = string_utils::split(paragraph, UITB_SENTENCE_DELIM);
 
-        for (const auto& sentence: vecSentences)
+        for (auto& sentence: vecSentences)
         {
+            string_utils::replace(sentence, "PLAYERNAME", g_playerName);
+            string_utils::replace(sentence, "RIVALNAME", g_rivalName);
             outDialogue.back().push_back(sentence);
         }
     }    

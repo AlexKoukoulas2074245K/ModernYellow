@@ -14,6 +14,8 @@ namespace string_utils
 
     std::vector<std::string> split(const std::string& s, char delim);
 
+    bool replace(std::string& s, const std::string& oldVal, const std::string& newVal);
+
     bool startsWith(const std::string& s, const std::string& pattern);
 }
 

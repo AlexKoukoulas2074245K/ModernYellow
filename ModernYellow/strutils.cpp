@@ -31,3 +31,12 @@ bool string_utils::startsWith(const std::string& s, const std::string& pattern)
 
     return true;
 }
+
+bool string_utils::replace(std::string& s, const std::string& oldVal, const std::string& newVal)
+{
+    size_t start_pos = s.find(oldVal);
+    if (start_pos == std::string::npos)
+        return false;
+    s.replace(start_pos, oldVal.length(), newVal);
+    return true;
+}

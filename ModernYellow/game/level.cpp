@@ -7,6 +7,7 @@
 #include "level.h"
 #include "tile.h"
 #include "npc.h"
+#include "overworldobject.h"
 #include "../resources/sresmanager.h"
 #include "../resources/dataresource.h"
 #include "../resources/textureresource.h"
@@ -38,6 +39,7 @@ Level::Level(
     const std::shared_ptr<TextureResource>& pAtlas):
 
     m_name(levelName),
+    m_pOverworldAtlas(pAtlas),
     m_ready(false),
     m_rows(0),
     m_cols(0),
@@ -46,12 +48,13 @@ Level::Level(
 {    
     if (!loadLevelTex()) return;
     if (!readLevelData()) return;            
+    if (!readLevelObjects()) return;
 
     // Calculate level area
     m_levelArea.x = 0;
     m_levelArea.y = 0;
-    m_levelArea.w = m_levelTex->getSurface().get()->w * g_scale;
-    m_levelArea.h = m_levelTex->getSurface().get()->h * g_scale;
+    m_levelArea.w = m_pLevelTex->getSurface().get()->w * g_scale;
+    m_levelArea.h = m_pLevelTex->getSurface().get()->h * g_scale;
     m_ready = true;
 }
 
@@ -73,6 +76,11 @@ void Level::update()
     {
         flowerTile->update();
     }
+
+    for (const auto& owobject: m_owobjects)
+    {
+        owobject->update();
+    }
 }
 
 void Level::render()
@@ -84,7 +92,7 @@ void Level::render()
     }
 
     // Then the level texture is rendered on top
-    SDL_RenderCopy(g_pRenderer.get(), m_levelTex->getTexture().get(), nullptr, &m_levelArea);
+    SDL_RenderCopy(g_pRenderer.get(), m_pLevelTex->getTexture().get(), nullptr, &m_levelArea);
      
 #if (defined (_DEBUG) || defined (DEBUG)) && defined (LEVEL_DEBUG_OCC)
      for (size_t y = 0; y < m_rows; ++y)
@@ -112,6 +120,12 @@ void Level::render()
         flowerTile->render(m_xOffset, m_yOffset);         
     }
      
+    // then all the overworld objects
+    for (const auto& owobject: m_owobjects)
+    {
+        owobject->render();
+    }
+
     // then all the npcs
     for (const auto& npc : m_npcs)
     {
@@ -135,9 +149,9 @@ bool Level::isReady() const
     return m_ready;
 }
 
-bool Level::loadNPCData(const std::shared_ptr<TextureResource>& pAtlas)
+bool Level::loadNPCData()
 {
-    // Load the dataresource 
+    // Load the npc data resource
     auto pNPCResource = castResToData(resmanager.loadResource("npcs.dat", RT_DATA));
 
     if (!pNPCResource) return false;
@@ -157,15 +171,15 @@ bool Level::loadNPCData(const std::shared_ptr<TextureResource>& pAtlas)
             auto texUVComps  = string_utils::split(lineComps[2], ',');
             auto movingNpc   = (lineComps[3] == "true") ? true : false;
             auto dir         = (Direction)(std::atoi(lineComps[4].c_str()));
-            auto isTrainer  = (lineComps[5] == "true") ? true : false;
+            auto isTrainer   = (lineComps[5] == "true") ? true : false;
            
-            m_npcs.push_back(std::make_unique<Npc>(
+            m_npcs.push_back(std::make_shared<Npc>(
                 std::atoi(texUVComps[0].c_str()) * DEFAULT_TILE_SIZE,
                 std::atoi(texUVComps[1].c_str()) * DEFAULT_TILE_SIZE,
                 getTileRC(std::atoi(vecPosComps[0].c_str()), std::atoi(vecPosComps[1].c_str())),
                 dir,
                 shared_from_this(),
-                pAtlas,
+                m_pOverworldAtlas,
                 movingNpc,                
                 isTrainer,
                 dialogue));
@@ -188,6 +202,25 @@ std::shared_ptr<Npc> Level::getNpcAtRC(const uint32 col, const uint32 row) const
             npc->getCurrTile()->getRow() == row)
         {
             return npc;
+        }
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<OWObject> Level::getOWObjectAt(const std::shared_ptr<Tile>& tile) const
+{
+    return getOWObjectAtRC(tile->getCol(), tile->getRow());
+}
+
+std::shared_ptr<OWObject> Level::getOWObjectAtRC(const uint32 col, const uint32 row) const
+{
+    for (auto owobject: m_owobjects)
+    {
+        if (owobject->getCurrTile()->getCol() == col &&
+            owobject->getCurrTile()->getRow() == row)
+        {
+            return owobject;
         }
     }
 
@@ -254,6 +287,11 @@ void Level::setOffset(
     {
         npc->setOffset(xOffset, yOffset);
     }
+
+    for (const auto& owobject: m_owobjects)
+    {
+        owobject->setOffset(xOffset, yOffset);
+    }
 }
 
 void Level::setFrozenNpcs(const bool frozen)
@@ -269,8 +307,8 @@ void Level::setFrozenNpcs(const bool frozen)
    =============== */
 bool Level::loadLevelTex()
 {
-    m_levelTex = castResToTex(resmanager.loadResource("levels/" + m_name + ".png", RT_TEXTURE));
-    return m_levelTex ? true : false;
+    m_pLevelTex = castResToTex(resmanager.loadResource("levels/" + m_name + ".png", RT_TEXTURE));
+    return m_pLevelTex ? true : false;
 }
 
 bool Level::readLevelData()
@@ -378,6 +416,45 @@ bool Level::readLevelData()
         pTile->addSeaTile();
         m_seaTiles.push_back(pTile);
     }
+
+    return true;
+}
+
+bool Level::readLevelObjects()
+{
+    // Load the objects data resource
+    auto pOWOResource = castResToData(resmanager.loadResource("objects.dat", RT_DATA));
+    
+    if (!pOWOResource) return false;
+
+    // Get Line by Line content
+    auto pContent = pOWOResource->getContent();
+
+    for (size_t lineIndex = 0; lineIndex < pContent.size(); lineIndex += 2)
+    {
+        const auto& line = pContent[lineIndex];
+        const auto& dialogue = pContent[lineIndex + 1];
+
+        if (string_utils::startsWith(line, m_name))
+        {
+            auto lineComps   = string_utils::split(line, ' ');
+            auto vecPosComps = string_utils::split(lineComps[1], ',');
+            auto texUVComps  = string_utils::split(lineComps[2], ',');
+            auto obtainable  = (lineComps[3] == "true") ? true : false;
+            auto solid       = (lineComps[4] == "true") ? true : false;
+            auto cuttable    = (lineComps[5] == "true") ? true : false;
+           
+            m_owobjects.push_back(std::make_shared<OWObject>(
+                std::atoi(texUVComps[0].c_str()) * DEFAULT_TILE_SIZE,
+                std::atoi(texUVComps[1].c_str()) * DEFAULT_TILE_SIZE,
+                m_pOverworldAtlas,
+                getTileRC(std::atoi(vecPosComps[0].c_str()), std::atoi(vecPosComps[1].c_str())),                
+                dialogue,
+                obtainable,
+                solid,
+                cuttable));
+        }
+    }    
 
     return true;
 }

@@ -57,8 +57,8 @@ uint32 Sprite::getCurrDelay() const { return m_impl->m_frameTime; }
    Public Methods
    ============== */
 Sprite::Sprite(    
-    const uint32 texU,
-    const uint32 texV,
+    const int32 texU,
+    const int32 texV,
     const std::shared_ptr<Tile> pInitTile,
     const Direction initDir,
     const std::shared_ptr<const Level> pLevelRef,
@@ -333,15 +333,15 @@ void Sprite::resetFrames()
    Private Methods
    =============== */
 void Sprite::loadAnimations(
-    const uint32 texU, 
-    const uint32 texV,
+    const int32 texU, 
+    const int32 texV,
     const std::shared_ptr<TextureResource>& pAtlas)
 {
     // Save the num. of cols per row in the atlas texture
     i_cachedAtlasWidth = pAtlas->getSurface()->w;
 
-    uint32 u = texU;
-    uint32 v = texV;
+    int32 u = texU;
+    int32 v = texV;
 
     // Load #1 Animations
     m_impl->m_anims[DIR_DOWN][0]  = pAtlas->getSubTexture(u, v, DEFAULT_TILE_SIZE, DEFAULT_TILE_SIZE); advanceUVs(u, v, i_cachedAtlasWidth);    
@@ -369,8 +369,8 @@ void Sprite::loadAnimations(
 }
 
 void Sprite::advanceUVs(
-    uint32& texU,
-    uint32& texV,
+    int32& texU,
+    int32& texV,
     const uint32 atlasWidth)
 {
     texU += DEFAULT_TILE_SIZE;

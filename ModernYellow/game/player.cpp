@@ -7,6 +7,7 @@
 #include "level.h"
 #include "sprite.h"
 #include "npc.h"
+#include "overworldobject.h"
 #include "tile.h"
 #include "uicomps/uitextbox.h"
 #include "../sinputhandler.h"
@@ -52,55 +53,73 @@ void Player::update()
     }
 
     if (ihandler.isKeyTapped(K_A))
-    {
-        std::shared_ptr<Npc> pNpc;
-                
+    {        
         switch (m_pSprite->getDir())
         {
             case DIR_DOWN:  
             {
-                pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileBelow(m_pSprite->getCurrTile())); 
+                auto pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileBelow(m_pSprite->getCurrTile())); 
+                auto pOwo = m_pLevelRef->getOWObjectAt(m_pLevelRef->getTileBelow(m_pSprite->getCurrTile()));
+
                 if (pNpc)
                 {
                     pNpc->tryChangeDirection(DIR_UP);
                     m_pTextbox = std::make_unique<UITextbox>(pNpc->getDialogue());                    
                 }
+                else if (pOwo)
+                {                    
+                    m_pTextbox = std::make_unique<UITextbox>(pOwo->getDialogue());
+                }
+
             } break;
 
             case DIR_UP:    
             {
-                pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileAbove(m_pSprite->getCurrTile()));
+                auto pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileAbove(m_pSprite->getCurrTile()));
+                auto pOwo = m_pLevelRef->getOWObjectAt(m_pLevelRef->getTileAbove(m_pSprite->getCurrTile()));
+
                 if (pNpc)
                 {
                     pNpc->tryChangeDirection(DIR_DOWN);
                     m_pTextbox = std::make_unique<UITextbox>(pNpc->getDialogue());
                 }
+                else if (pOwo)
+                {
+                    m_pTextbox = std::make_unique<UITextbox>(pOwo->getDialogue());
+                }
             } break;
 
             case DIR_LEFT:  
             {
-                pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileLeftOf(m_pSprite->getCurrTile())); 
+                auto pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileLeftOf(m_pSprite->getCurrTile())); 
+                auto pOwo = m_pLevelRef->getOWObjectAt(m_pLevelRef->getTileLeftOf(m_pSprite->getCurrTile()));
+
                 if (pNpc)
                 {
                     pNpc->tryChangeDirection(DIR_RIGHT);
                     m_pTextbox = std::make_unique<UITextbox>(pNpc->getDialogue());
                 }
+                else if (pOwo)
+                {
+                    m_pTextbox = std::make_unique<UITextbox>(pOwo->getDialogue());
+                }
             } break;
 
             case DIR_RIGHT: 
             {
-                pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileRightOf(m_pSprite->getCurrTile())); 
+                auto pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileRightOf(m_pSprite->getCurrTile())); 
+                auto pOwo = m_pLevelRef->getOWObjectAt(m_pLevelRef->getTileRightOf(m_pSprite->getCurrTile()));
+
                 if (pNpc)
                 {
                     pNpc->tryChangeDirection(DIR_LEFT);
                     m_pTextbox = std::make_unique<UITextbox>(pNpc->getDialogue());
                 }
+                else if (pOwo)
+                {
+                    m_pTextbox = std::make_unique<UITextbox>(pOwo->getDialogue());
+                }
             } break;
-        }
-        
-        if (pNpc)
-        {            
-            m_pTextbox = std::make_unique<UITextbox>(pNpc->getDialogue());               
         }
     }
 

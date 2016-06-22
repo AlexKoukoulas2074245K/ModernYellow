@@ -78,6 +78,7 @@
     <ClCompile Include="font.cpp" />
     <ClCompile Include="game\level.cpp" />
     <ClCompile Include="game\npc.cpp" />
+    <ClCompile Include="game\overworldobject.cpp" />
     <ClCompile Include="game\player.cpp" />
     <ClCompile Include="game\sprite.cpp" />
     <ClCompile Include="game\tile.cpp" />
@@ -99,6 +100,7 @@
     <ClInclude Include="font.h" />
     <ClInclude Include="game\level.h" />
     <ClInclude Include="game\npc.h" />
+    <ClInclude Include="game\overworldobject.h" />
     <ClInclude Include="game\player.h" />
     <ClInclude Include="game\sprite.h" />
     <ClInclude Include="game\tile.h" />
