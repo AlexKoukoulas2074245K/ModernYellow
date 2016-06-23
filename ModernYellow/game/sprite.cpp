@@ -9,6 +9,7 @@
 #include "../sinputhandler.h"
 #include "../portcommon.h"
 #include "../resources/textureresource.h"
+#include "../resources/sresmanager.h"
 
 #include <array>
 #include <unordered_map>
@@ -29,12 +30,14 @@ static uint32 i_cachedAtlasWidth;
 using frames_t = std::array<std::shared_ptr<TextureResource>, Sprite::SPRITE_MAX_FRAMES_PER_ANI>;
 using animations_t = std::unordered_map<Direction, frames_t>;
 
+
 struct Sprite::spriteImpl
 {    
     animations_t m_anims;        
     SDL_Rect m_worldPos;
     Direction m_currDir;
     
+    std::shared_ptr<TextureResource> m_jumpingTex;
     std::shared_ptr<Tile> m_pCurrTile;
     std::shared_ptr<Tile> m_pNextTile;
     std::weak_ptr<const Level> m_pLevelRef;
@@ -44,16 +47,15 @@ struct Sprite::spriteImpl
     uint32 m_frameTime;
     uint32 m_changeDirDelay;
     uint32 m_velocity;
+    int32 m_jumpCounter;
     
     bool m_walkingAnimation;
     bool m_frozen;
+    bool m_isPlayer;
+    bool m_jumpDelayVel;
 
     SpriteState m_currState;    
 };
-
-// TEMP
-uint32 Sprite::getCurrFrame() const { return m_impl->m_currFrame; }
-uint32 Sprite::getCurrDelay() const { return m_impl->m_frameTime; }
 
 /* ==============
    Public Methods
@@ -64,7 +66,8 @@ Sprite::Sprite(
     const std::shared_ptr<Tile> pInitTile,
     const Direction initDir,
     const std::shared_ptr<const Level> pLevelRef,
-    const std::shared_ptr<TextureResource>& pAtlas):
+    const std::shared_ptr<TextureResource>& pAtlas,
+    const bool isPlayer /* false */):
 
     m_impl(std::make_unique<spriteImpl>())
 {
@@ -90,13 +93,15 @@ Sprite::Sprite(
 
     m_impl->m_changeDirDelay = SPRITE_MAX_CHANGE_DIR_DELAY;
 
+    m_impl->m_jumpCounter = 0;
+
     m_impl->m_velocity = g_tileSize / DEFAULT_TILE_SIZE;
 
     m_impl->m_currState = S_IDLE;
 
-    m_impl->m_walkingAnimation = false;    
-    
+    m_impl->m_walkingAnimation = false;        
     m_impl->m_frozen = false;
+    m_impl->m_isPlayer = isPlayer;
 }
 
 Sprite::~Sprite()
@@ -111,7 +116,8 @@ void Sprite::tryMove(const Direction dir)
     switch (m_impl->m_currState)
     {
         case S_MOVING:        
-        case S_DIRFREEZE: break;
+        case S_DIRFREEZE:
+        case S_JUMPING: break;
 
         case S_IDLE:
         {            
@@ -130,11 +136,35 @@ void Sprite::tryMove(const Direction dir)
             if (pNextTile->isWalkable())
             {
 #endif
-                m_impl->m_currState = S_MOVING;
+                // First Ledge Case
+                if (pNextTile->getTileType() == Tile::TT_LEDGE)                    
+                {
+                    if (pLevelRef->getTileBelow(m_impl->m_pCurrTile) == pNextTile)
+                    {
+                        m_impl->m_currState = S_JUMPING;
+                        m_impl->m_jumpDelayVel = true;
+                        m_impl->m_jumpCounter = 0;
 
-                // "Reserve" the target tile as occupied to avoid
-                // two sprites moving to the same tile
-                pNextTile->setOccupied(true);
+                        // "Reserve" the target tile as occupied to avoid
+                        // two sprites moving to the same tile
+                        pNextTile->setOccupied(true);
+                    }
+                }
+                // Second Ledge Case
+                else if (m_impl->m_pCurrTile->getTileType() == Tile::TT_LEDGE)
+                {
+                    m_impl->m_currState = S_JUMPING;
+                    m_impl->m_jumpDelayVel = false;
+                }
+                // No Ledge case
+                else
+                {
+                    m_impl->m_currState = S_MOVING;
+
+                    // "Reserve" the target tile as occupied to avoid
+                    // two sprites moving to the same tile
+                    pNextTile->setOccupied(true);
+                }                
 
 #if !defined(SPRITE_NO_COL)
             }
@@ -151,7 +181,8 @@ void Sprite::tryChangeDirection(const Direction dir)
 {    
     switch (m_impl->m_currState)
     {
-        case S_MOVING: break;
+        case S_MOVING:
+        case S_JUMPING: break;
 
         case S_IDLE:
         case S_DIRFREEZE:
@@ -192,8 +223,7 @@ void Sprite::update()
     // and in order to avoid the animation resetting mid-movement this
     // reordering must happen    
     updateAnimation();
-    updatePosition();
-    
+    updatePosition();   
 }
 
 void Sprite::updateAnimation()
@@ -232,7 +262,8 @@ void Sprite::updatePosition()
         } break;
 
         case S_MOVING:
-        {
+        case S_JUMPING:
+        {            
             switch (m_impl->m_currDir)
             {
                 case DIR_DOWN:  m_impl->m_worldPos.y += m_impl->m_velocity; break;
@@ -245,34 +276,79 @@ void Sprite::updatePosition()
             if (
                 m_impl->m_worldPos.x == m_impl->m_pNextTile->getX() &&
                 m_impl->m_worldPos.y == m_impl->m_pNextTile->getY())
-            {
+            {                
                 m_impl->m_pCurrTile->setOccupied(false);                
                 m_impl->m_pCurrTile = m_impl->m_pNextTile;
                 m_impl->m_currState = S_IDLE;
                 m_impl->m_walkingAnimation = false;
+
+                if (m_impl->m_pCurrTile->getTileType() == Tile::TT_LEDGE)
+                {
+                    tryMove(m_impl->m_currDir);
+                }
             }
 
         } break;
+    }
+
+    if (m_impl->m_currState == S_JUMPING)
+    {
+        if (m_impl->m_jumpDelayVel) m_impl->m_jumpCounter--;
+        if (!m_impl->m_jumpDelayVel) m_impl->m_jumpCounter++;
     }
 }
 
 void Sprite::render()
 {
+    
+
+    if (m_impl->m_currState == S_JUMPING)
+    {
+        SDL_Rect jumpRendRect;
+        jumpRendRect.x = m_impl->m_worldPos.x + m_impl->m_xRendOffset;
+        jumpRendRect.y = m_impl->m_worldPos.y + m_impl->m_yRendOffset + 2 * DEFAULT_TILE_SIZE;
+        jumpRendRect.w = m_impl->m_jumpingTex->getSurface()->w * g_scale;
+        jumpRendRect.h = m_impl->m_jumpingTex->getSurface()->h * g_scale;
+
+        SDL_RenderCopy(
+            g_pRenderer.get(),
+            m_impl->m_jumpingTex->getTexture().get(),
+            nullptr,
+            &jumpRendRect);
+    }
+
     SDL_Rect rendRect;
     rendRect.x = m_impl->m_worldPos.x + m_impl->m_xRendOffset;
     rendRect.y = m_impl->m_worldPos.y + m_impl->m_yRendOffset - 4 * g_scale;
+
+    if (m_impl->m_currState == S_JUMPING) rendRect.y += g_scale * m_impl->m_jumpCounter;    
+
     rendRect.w = g_tileSize;
     rendRect.h = g_tileSize;
 
-    
+
     auto anim = m_impl->m_anims[m_impl->m_currDir];
     auto frame = anim[m_impl->m_currFrame];
-    
+
     SDL_RenderCopy(
-        g_pRenderer.get(), 
+        g_pRenderer.get(),
         frame->getTexture().get(),
-        nullptr, 
+        nullptr,
         &rendRect);
+}
+
+bool Sprite::ledgeFail() const
+{
+    if (m_impl->m_pLevelRef.expired()) return true;
+    auto pLevelRef = m_impl->m_pLevelRef.lock();
+
+    if (m_impl->m_pNextTile->getTileType() == Tile::TT_LEDGE)
+    {
+        if (pLevelRef->getTileBelow(m_impl->m_pCurrTile) == m_impl->m_pNextTile) return false;
+        else return true;
+    }
+        
+    return true;
 }
 
 bool Sprite::isFrozen() const
@@ -413,6 +489,9 @@ void Sprite::loadAnimations(
     m_impl->m_anims[DIR_UP][3]    = m_impl->m_anims[DIR_UP][1]->getHorFlippedTexture();
     m_impl->m_anims[DIR_LEFT][3]  = m_impl->m_anims[DIR_LEFT][1];
     m_impl->m_anims[DIR_RIGHT][3] = m_impl->m_anims[DIR_RIGHT][1];
+
+    // Load jump animation
+    m_impl->m_jumpingTex = castResToTex(resmanager.loadResource("misctex/jumpingV.png", RT_TEXTURE));
 }
 
 void Sprite::advanceUVs(

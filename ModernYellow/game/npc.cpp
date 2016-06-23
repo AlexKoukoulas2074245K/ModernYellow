@@ -68,7 +68,7 @@ void Npc::update()
                 case DIR_RIGHT: nextTile = pLevelRef->getTileRightOf(getCurrTile()); break;
             }
 
-            if (!nextTile->isWalkable())
+            if (!nextTile->isWalkable() || nextTile->getTileType() == Tile::TT_LEDGE)
             {
                 tryChangeDirection(randDir);
             }

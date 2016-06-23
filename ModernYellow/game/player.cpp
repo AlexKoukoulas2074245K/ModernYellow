@@ -69,7 +69,8 @@ Player::Player(
         pInitTile,
         initDir,
         m_pLevelRef,
-        pAtlas);
+        pAtlas,
+        true);
 }
 
 Player::~Player(){}
@@ -262,8 +263,11 @@ void Player::update()
     // walking animation if the player is trying to walk against a solid tile
     else
     {
-        if (!m_pSprite->getNextTile()->isWalkable() && 
-            m_pSprite->getState() != Sprite::S_MOVING)
+        if (
+            (!m_pSprite->getNextTile()->isWalkable() || m_pSprite->ledgeFail()) &&
+            m_pSprite->getState() != Sprite::S_MOVING &&
+            m_pSprite->getState() != Sprite::S_JUMPING
+            )
         {            
             if ((m_pSprite->getDir() == DIR_DOWN  && !ihandler.isKeyDown(K_DOWN))   ||
                 (m_pSprite->getDir() == DIR_UP    && !ihandler.isKeyDown(K_UP))   ||
@@ -293,7 +297,7 @@ void Player::update()
             m_warpInfo = std::make_unique<WarpInfo>(pWarp, m_pSprite->getDir(), pWarp->routeConnection);
             m_pLevelRef->startWarpTo(pWarp);
         }        
-    }      
+    }          
 }
 
 void Player::render()

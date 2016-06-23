@@ -14,19 +14,16 @@ class Sprite
 public:    
     enum SpriteState
     {
-        S_MOVING, S_DIRFREEZE, S_IDLE
+        S_MOVING, S_DIRFREEZE, S_IDLE, S_JUMPING
     };
 
 public:
 
     static const uint32 SPRITE_MAX_FRAMES_PER_ANI   = 4U;
     static const uint32 SPRITE_MAX_CHANGE_DIR_DELAY = 4U;
-    static const uint32 SPRITE_ANI_DELAY            = 7U;
+    static const uint32 SPRITE_ANI_DELAY            = 7U;    
 
 public:
-    // TEMP
-    uint32 getCurrFrame() const;
-    uint32 getCurrDelay() const;
 
     Sprite(        
         const int32 texU, 
@@ -34,7 +31,8 @@ public:
         const std::shared_ptr<Tile> pInitTile,
         const Direction initDir,
         const std::shared_ptr<const Level> pLevelRef,
-        const std::shared_ptr<TextureResource>& pAtlas);
+        const std::shared_ptr<TextureResource>& pAtlas,
+        const bool isPlayer = false);
 
     virtual ~Sprite();
     
@@ -48,6 +46,8 @@ public:
 
     virtual void render();
     
+    bool ledgeFail() const;
+
     bool isFrozen() const;
 
     const std::shared_ptr<Tile>& getCurrTile() const;
