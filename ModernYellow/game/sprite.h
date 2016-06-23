@@ -42,6 +42,8 @@ public:
 
     virtual void tryChangeDirection(const Direction dir);
 
+    void tryStopWalkingAnimation();
+
     virtual void update();
 
     virtual void render();
@@ -62,7 +64,6 @@ public:
 
     void setFrozen(const bool frozen);
 
-    void setWalkingAnimation(const bool walkingAnimation);
     
     void setState(const SpriteState state);
 

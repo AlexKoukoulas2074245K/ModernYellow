@@ -5,10 +5,10 @@
 
 #include "textureresource.h"
 #include "../portcommon.h"
-
 #include <SDL_image.h>
 
 extern string g_texPath;
+extern uint32 g_currColor;
 extern pRenderer_t g_pRenderer;
 
 /* Color Masks */
@@ -72,8 +72,7 @@ bool TextureResource::load()
 }
 
 void TextureResource::compileTexture()
-{    
-    gatherSurfacePixelData();
+{        
     m_pTexture.reset(SDL_CreateTextureFromSurface(g_pRenderer.get(), m_pSurface.get()));
 }
 
@@ -128,20 +127,14 @@ void TextureResource::darken(const SDL_Rect& rect)
     for (int32 y = rect.y; y < rect.y + rect.h; ++y)
     {
         for (int32 x = rect.x; x < rect.x + rect.w; ++x)
-        {
+        {            
             // Grab curr pixel
-            uint32 currPixel = getPixelAt(x, y);
+            uint32 currPixel = getPixelAt(x, y);         
 
-            // Get the position of the pixel in the color set
-            auto posIter = m_colors.find(currPixel);
-
-            // if the pixel is not the darkest (std::set is ordered so
-            // darkest color will reside at set.begin()), make it one step darker
-            if (posIter != m_colors.begin())
-            {
-                uint32 nextPixel = *(--posIter);
-                setPixelAt(nextPixel, x, y);
-            }            
+            if (currPixel == envcolors::EC_WHITE) setPixelAt(g_currColor, x, y);
+            else if (currPixel == g_currColor) setPixelAt(envcolors::EC_CBLUE, x, y);
+            else if (currPixel == envcolors::EC_CBLUE) setPixelAt(envcolors::EC_BLACK, x, y);    
+            else if (currPixel == 16777215) setPixelAt(0, x, y);
         }
     }
 
@@ -217,19 +210,6 @@ TextureResource::TextureResource(const string& resourceName):
     m_pTexture(nullptr, SDL_DestroyTexture),
     m_pSurface(nullptr, SDL_FreeSurface)
 {
-}
-
-void TextureResource::gatherSurfacePixelData()
-{
-   
-    m_colors.clear();
-    for (int y = 0; y < m_pSurface->h; ++y)
-    {
-        for (int x = 0; x < m_pSurface->w; ++x)
-        {
-            m_colors.insert(getPixelAt(x, y));
-        }
-    }
 }
 
 uint32 TextureResource::getPixelAt(const uint32 x, const uint32 y) const

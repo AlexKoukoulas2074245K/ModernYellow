@@ -19,6 +19,33 @@
 
 extern pFont_t g_pFont;
 
+/* ==================
+   Struct Definitions
+   ================== */
+struct Player::WarpInfo
+{
+    uint32 m_warpAfterCol, m_warpAfterRow;
+    Direction m_warpAfterDir;
+    int32 m_warpTimer;    
+
+    WarpInfo(
+        const std::shared_ptr<Warp> pWarp, 
+        const Direction dir);
+};
+
+/* =============================
+   Struct Method Implementations
+   ============================= */
+Player::WarpInfo::WarpInfo(
+    const std::shared_ptr<Warp> pWarp,
+    const Direction dir)
+{
+    m_warpTimer = Level::LEVEL_WARP_LEVEL_DELAY;
+    m_warpAfterDir = pWarp->forcedDir == -1 ? dir : (Direction) pWarp->forcedDir;
+    m_warpAfterCol = pWarp->col;
+    m_warpAfterRow = pWarp->row;
+}
+
 /* ==============
    Public Methods
    ============== */
@@ -29,11 +56,7 @@ Player::Player(
     const std::shared_ptr<TextureResource>& pAtlas):
 
     m_pLevelRef(pLevelRef),
-    m_firstTileAfterWarp(false),
-    m_warpAfterCol(0),
-    m_warpAfterRow(0),    
-    m_warping(false),
-    m_warpTimer(Level::LEVEL_WARP_LEVEL_DELAY),
+    m_warpInfo(nullptr),
     m_standingAtDoor(false)
 {
     m_pSprite = std::make_unique<Sprite>(
@@ -65,11 +88,11 @@ void Player::update()
     // The player is in the middle of a warp to 
     // another location, and is gradually performing
     // the move along with the level
-    if (m_warping)
+    if (m_warpInfo)
     {        
-        if (--m_warpTimer <= 0)
+        if (--m_warpInfo->m_warpTimer <= 0)
         {
-            m_warpTimer = Level::LEVEL_WARP_LEVEL_DELAY;
+            m_warpInfo->m_warpTimer = Level::LEVEL_WARP_LEVEL_DELAY;
             m_pSprite->darken();
         }
 
@@ -81,7 +104,9 @@ void Player::update()
                 PLAYER_TEX_U, 
                 PLAYER_TEX_V, 
                 castResToTex(resmanager.loadResource("tilemaps/overworldmap.png", RT_TEXTURE)));
-            m_pSprite->teleportTo(m_pLevelRef->getTileRC(m_warpAfterCol, m_warpAfterRow));
+            m_pSprite->teleportTo(m_pLevelRef->getTileRC(
+                m_warpInfo->m_warpAfterCol, 
+                m_warpInfo->m_warpAfterRow));
 
             // If the player moved from an inside location to an outside one, the player
             // should start in moving state targeting the tile below the door of the building
@@ -93,7 +118,7 @@ void Player::update()
             
             // Signal level to reset the warp related variables
             m_firstTileAfterWarp = true;
-            m_warping = false;
+            m_warpInfo = nullptr;
             m_standingAtDoor = false;
             m_pLevelRef->resetWarping();
         }
@@ -183,10 +208,7 @@ void Player::update()
             if (m_standingAtDoor)
             {
                 auto pWarp = m_pSprite->getCurrTile()->getWarp();
-                m_warping = true;
-                m_warpAfterDir = pWarp->forcedDir == -1 ? m_pSprite->getDir() : (Direction) pWarp->forcedDir;
-                m_warpAfterCol = pWarp->col;
-                m_warpAfterRow = pWarp->row;
+                m_warpInfo = std::make_unique<WarpInfo>(pWarp, m_pSprite->getDir());                
                 m_pLevelRef->startWarpTo(pWarp);
             }
             else
@@ -207,13 +229,11 @@ void Player::update()
     // in a TryMove operation (or possibly a warp for DIR_DOWN)
     else if (ihandler.isKeyDown(K_DOWN))    
     {
-        if (m_standingAtDoor)
+        if (m_standingAtDoor && !m_pSprite->getState() == Sprite::S_MOVING)
         {
+            m_pSprite->tryChangeDirection(DIR_DOWN);
             auto pWarp = m_pSprite->getCurrTile()->getWarp();
-            m_warping = true;
-            m_warpAfterDir = pWarp->forcedDir == -1 ? m_pSprite->getDir() : (Direction) pWarp->forcedDir;
-            m_warpAfterCol = pWarp->col;
-            m_warpAfterRow = pWarp->row;
+            m_warpInfo = std::make_unique<WarpInfo>(pWarp, m_pSprite->getDir());
             m_pLevelRef->startWarpTo(pWarp);
         }
         else
@@ -221,9 +241,9 @@ void Player::update()
             m_pSprite->tryMove(DIR_DOWN);
         }        
     }
-    else if (ihandler.isKeyDown(K_UP))      m_pSprite->tryMove(DIR_UP);    
-    else if (ihandler.isKeyDown(K_LEFT))    m_pSprite->tryMove(DIR_LEFT);    
-    else if (ihandler.isKeyDown(K_RIGHT))   m_pSprite->tryMove(DIR_RIGHT);    
+    else if (ihandler.isKeyDown(K_UP))    m_pSprite->tryMove(DIR_UP);    
+    else if (ihandler.isKeyDown(K_LEFT))  m_pSprite->tryMove(DIR_LEFT);    
+    else if (ihandler.isKeyDown(K_RIGHT)) m_pSprite->tryMove(DIR_RIGHT);    
 
     // No related key downs. Need to test for cancelling the 
     // walking animation if the player is trying to walk against a solid tile
@@ -238,11 +258,11 @@ void Player::update()
                 (m_pSprite->getDir() == DIR_RIGHT && !ihandler.isKeyDown(K_RIGHT)))
             {                
                 m_pSprite->setState(Sprite::S_IDLE);
-                m_pSprite->setWalkingAnimation(false);
+                m_pSprite->tryStopWalkingAnimation();
             }
         }
     }
-
+    
     auto prevTile = m_pSprite->getCurrTile();
     m_pSprite->update();
     auto currTile = m_pSprite->getCurrTile();
@@ -252,20 +272,15 @@ void Player::update()
     // The player has just completed a move and 
     // is residing on a new tile
     if (prevTile != currTile)
-    {        
-        m_firstTileAfterWarp = false;
+    {                
         auto pWarp = currTile->getWarp();
-        if (currTile->getWarp() && 
-            !m_firstTileAfterWarp && 
+        if (currTile->getWarp() &&             
             !m_standingAtDoor)
-        {               
-            m_warping = true;
-            m_warpAfterDir = pWarp->forcedDir == -1 ? m_pSprite->getDir() : (Direction) pWarp->forcedDir;
-            m_warpAfterCol = pWarp->col;
-            m_warpAfterRow = pWarp->row;
+        {                           
+            m_warpInfo = std::make_unique<WarpInfo>(pWarp, m_pSprite->getDir());
             m_pLevelRef->startWarpTo(pWarp);
         }        
-    }    
+    }      
 }
 
 void Player::render()

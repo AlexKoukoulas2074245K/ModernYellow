@@ -40,7 +40,7 @@ public:
     /* Darkens the surface (and as the result the texture) one step */
     void darken();
 
-    void darken(const SDL_Rect& rect);
+    void darken(const SDL_Rect& rect);        
 
     std::shared_ptr<TextureResource> getSubTexture(
         const uint32 tu,
@@ -60,8 +60,6 @@ private:
 
     explicit TextureResource(const string& resourceName);
 
-    void gatherSurfacePixelData();
-
     uint32 getPixelAt(const uint32 x, const uint32 y) const;
 
     void setPixelAt(
@@ -72,7 +70,6 @@ private:
 private:
     
     pTexture_t m_pTexture;
-    pSurface_t m_pSurface;
-    std::set<uint32> m_colors;
+    pSurface_t m_pSurface;    
 
 };

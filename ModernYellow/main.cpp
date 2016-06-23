@@ -46,6 +46,7 @@ uint32 g_sfxVol     = 1;
 uint32 g_musicVol   = 1;
 uint32 g_scale      = 1;
 uint32 g_tileSize   = 16;
+uint32 g_currColor  = envcolors::EC_PALET;
 string g_playerName = "Ash";
 string g_rivalName  = "Garry";
 

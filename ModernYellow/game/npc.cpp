@@ -25,15 +25,17 @@ Npc::Npc(
     Sprite(texU, texV, pInitTile, initDir, pLevelRef, pAtlas), 
     m_initDir(initDir),
     m_pLevelRef(pLevelRef),
-    m_decisionTimer(NPC_MOVE_DECISION_DELAY),
+    m_decisionTimer(0U),
     m_dialogue(dialogue),
     m_staticRestTimer(0U),
     m_flags(0U)
 {
     if (movingNpc) m_flags |= NPC_FLAG_DYNAMIC;
     if (isTrainer) m_flags |= NPC_FLAG_TRAINER;    
-
+    
     srand((uint32) time(NULL));
+
+    m_decisionTimer = NPC_MOVE_DECISION_DELAY + (rand() % NPC_MOVE_DECISION_VAR);
 }
 
 Npc::~Npc(){}
@@ -52,7 +54,7 @@ void Npc::update()
         m_decisionTimer--;
         if (m_decisionTimer <= 0)
         {
-            m_decisionTimer = NPC_MOVE_DECISION_DELAY;
+            m_decisionTimer = NPC_MOVE_DECISION_DELAY + (rand() % NPC_MOVE_DECISION_VAR);
 
             Direction randDir = (Direction)(rand() % 4);
 

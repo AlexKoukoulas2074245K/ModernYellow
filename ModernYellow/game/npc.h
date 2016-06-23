@@ -44,6 +44,7 @@ private:
 
     static const uint32 NPC_STATIC_RESET_DELAY  = 120;
     static const uint32 NPC_MOVE_DECISION_DELAY = 200;
+    static const uint32 NPC_MOVE_DECISION_VAR   = 80;
 
 private:
     

@@ -71,7 +71,7 @@ void Level::update()
     {
         m_warpLevelDelay = LEVEL_WARP_LEVEL_DELAY;
         m_warpLevel++;
-       
+        
         auto normXOffset = -m_xOffset / (int32)g_scale;
         auto normYOffset = -m_yOffset / (int32)g_scale;
 
@@ -82,11 +82,9 @@ void Level::update()
         darkenArea.x = normXOffset < 0 || normXOffset + stdWidth > m_pLevelTex->getSurface()->w ? 0 : normXOffset;
         darkenArea.y = normYOffset < 0 || normYOffset + stdHeight> m_pLevelTex->getSurface()->h ? 0 : normYOffset;
         darkenArea.w = normXOffset < 0 || normXOffset + stdWidth > m_pLevelTex->getSurface()->w ? m_pLevelTex->getSurface()->w : stdWidth;
-        darkenArea.h = normYOffset < 0 || normYOffset + stdHeight> m_pLevelTex->getSurface()->h ? m_pLevelTex->getSurface()->h :  stdHeight;
+        darkenArea.h = normYOffset < 0 || normYOffset + stdHeight> m_pLevelTex->getSurface()->h ? m_pLevelTex->getSurface()->h : stdHeight;
                
-#//if !defined(DEBUG) && !defined(_DEBUG)
         m_pLevelTex->darken(darkenArea);        
-//#endif
 
         for (const auto& npc: m_npcs)
         {

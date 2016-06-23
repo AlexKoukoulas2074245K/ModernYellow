@@ -50,6 +50,7 @@ struct Sprite::spriteImpl
     SpriteState m_currState;    
 };
 
+// TEMP
 uint32 Sprite::getCurrFrame() const { return m_impl->m_currFrame; }
 uint32 Sprite::getCurrDelay() const { return m_impl->m_frameTime; }
 
@@ -159,6 +160,14 @@ void Sprite::tryChangeDirection(const Direction dir)
             m_impl->m_changeDirDelay = SPRITE_MAX_CHANGE_DIR_DELAY;
         } break;
     }        
+}
+
+void Sprite::tryStopWalkingAnimation()
+{
+    if (!(m_impl->m_currFrame % 2))
+    {
+        m_impl->m_walkingAnimation = false;
+    }    
 }
 
 void Sprite::update()
@@ -303,11 +312,6 @@ uint32 Sprite::getY() const
 void Sprite::setFrozen(const bool frozen)
 {
     m_impl->m_frozen = frozen;
-}
-
-void Sprite::setWalkingAnimation(const bool walkingAnimation)
-{
-    m_impl->m_walkingAnimation = walkingAnimation;
 }
 
 void Sprite::setState(const SpriteState state)

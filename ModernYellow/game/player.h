@@ -12,7 +12,7 @@ class Level;
 class TextureResource;
 class UIComponent;
 class Player final
-{
+{    
 public:
 
     Player(
@@ -51,15 +51,13 @@ private:
     static const uint32 PLAYER_TEX_V = 14 * DEFAULT_TILE_SIZE;
 
 private:
+    struct WarpInfo;
 
     std::shared_ptr<Level> m_pLevelRef;
     std::unique_ptr<Sprite> m_pSprite;
     std::unique_ptr<UIComponent> m_pTextbox;    
-    uint32 m_warpAfterCol, m_warpAfterRow;
-    Direction m_warpAfterDir;
-    int32 m_warpTimer;
+    std::unique_ptr<WarpInfo> m_warpInfo;
     bool m_firstTileAfterWarp;
-    bool m_warping;
     bool m_standingAtDoor;
 
 };
