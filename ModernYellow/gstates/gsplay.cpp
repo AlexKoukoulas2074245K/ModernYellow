@@ -37,11 +37,11 @@ GSPlay::GSPlay():
     auto pAtlas = castResToTex(resmanager.loadResource("tilemaps/overworldmap.png", RT_TEXTURE));
     
     auto start = SDL_GetTicks();
-    m_pLevel = std::make_shared<Level>("iplayerHouse2", pAtlas);    
+    m_pLevel = std::make_shared<Level>("ioaksLab", pAtlas);    
     m_pLevel->loadNPCData();
     
     m_pPlayer = std::make_unique<Player>(
-        m_pLevel->getTileRC(4, 7),        
+        m_pLevel->getTileRC(5, 12),        
         Direction::DIR_UP,
         m_pLevel,
         pAtlas);
@@ -54,17 +54,15 @@ GSPlay::~GSPlay()
 }
 
 void GSPlay::update()
-{           
+{   
+    m_pLevel->update();
     m_pPlayer->update();
 
     if (m_pPlayer->hasUIDialog() != m_uiActions)
     {
         m_uiActions = m_pPlayer->hasUIDialog();
         m_pLevel->setFrozenNpcs(m_uiActions);
-    }
-
-    m_pLevel->update();
-   
+    }    
 
     globXOffset = g_width / 2  - m_pPlayer->getX() - g_tileSize;
     globYOffset = g_height / 2 - m_pPlayer->getY() - g_tileSize / 2;

@@ -60,5 +60,6 @@ private:
     int32 m_warpTimer;
     bool m_firstTileAfterWarp;
     bool m_warping;
+    bool m_standingAtDoor;
 
 };

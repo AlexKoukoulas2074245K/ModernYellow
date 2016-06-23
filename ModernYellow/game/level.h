@@ -52,6 +52,8 @@ public:
 
     void startWarpTo(std::shared_ptr<Warp> destination);
     
+    bool isInnerDoor(std::shared_ptr<Tile> tile) const;
+
     bool isReady() const;
 
     int getWarpLevel() const;

@@ -40,7 +40,8 @@ public:
        will yield faster performance due to resource caching */
     shared_ptr<Resource> loadResource(
         const string& resourceName,
-        const ResourceType resourceType);
+        const ResourceType resourceType,
+        const bool enableCaching = true);
 
     /* Returns the number of cached resources with the given name (should be 1 or 0 normally) */
     int isResourceCached(const string& resourceName) const;

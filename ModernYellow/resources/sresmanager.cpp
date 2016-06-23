@@ -23,9 +23,10 @@ SResManager& SResManager::instance()
    ============== */
 
 shared_ptr<Resource> SResManager::loadResource(const string& resourceName,
-                                               const ResourceType resourceType)
+                                               const ResourceType resourceType,
+                                               const bool enableCaching /* true */)
 {    
-    if (isResourceCached(resourceName))
+    if (isResourceCached(resourceName) && enableCaching)
     {
         // Check that the cached resource has not expired (there are still
         // shared pointers pointing to it) before returning it

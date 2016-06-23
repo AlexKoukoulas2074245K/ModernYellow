@@ -221,6 +221,7 @@ TextureResource::TextureResource(const string& resourceName):
 
 void TextureResource::gatherSurfacePixelData()
 {
+   
     m_colors.clear();
     for (int y = 0; y < m_pSurface->h; ++y)
     {

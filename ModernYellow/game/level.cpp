@@ -81,12 +81,12 @@ void Level::update()
 
         darkenArea.x = normXOffset < 0 || normXOffset + stdWidth > m_pLevelTex->getSurface()->w ? 0 : normXOffset;
         darkenArea.y = normYOffset < 0 || normYOffset + stdHeight> m_pLevelTex->getSurface()->h ? 0 : normYOffset;
-        darkenArea.w = stdWidth;
-        darkenArea.h = stdHeight;
+        darkenArea.w = normXOffset < 0 || normXOffset + stdWidth > m_pLevelTex->getSurface()->w ? m_pLevelTex->getSurface()->w : stdWidth;
+        darkenArea.h = normYOffset < 0 || normYOffset + stdHeight> m_pLevelTex->getSurface()->h ? m_pLevelTex->getSurface()->h :  stdHeight;
                
-#if !defined(DEBUG) && !defined(_DEBUG)
+#//if !defined(DEBUG) && !defined(_DEBUG)
         m_pLevelTex->darken(darkenArea);        
-#endif
+//#endif
 
         for (const auto& npc: m_npcs)
         {
@@ -213,6 +213,17 @@ void Level::startWarpTo(std::shared_ptr<Warp> destination)
     setFrozenNpcs(true);
     m_warpLevel = 1;
     m_name = destination->location;            
+}
+
+bool Level::isInnerDoor(std::shared_ptr<Tile> tile) const
+{
+    auto pLeftTile  = getTileLeftOf(tile);
+    auto pRightTile = getTileRightOf(tile);
+
+    if (tile->getWarp() && pLeftTile && pLeftTile->getWarp()) return true;
+    if (tile->getWarp() && pRightTile && pRightTile->getWarp()) return true;
+
+    return false;
 }
 
 bool Level::isReady() const

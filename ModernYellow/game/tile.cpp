@@ -150,12 +150,12 @@ void Tile::setOccupied(const bool occupied)
 
 void Tile::addSeaTile()
 {    
-    m_frames.push_back(castResToTex(resmanager.loadResource("misctex/seaTile.png", RT_TEXTURE)));
+    m_frames.push_back(castResToTex(resmanager.loadResource("misctex/seaTile.png", RT_TEXTURE, false)));
 }
 
 void Tile::addGrassTile()
 {
-    m_frames.push_back(castResToTex(resmanager.loadResource("misctex/grassTile.png", RT_TEXTURE)));
+    m_frames.push_back(castResToTex(resmanager.loadResource("misctex/grassTile.png", RT_TEXTURE, false)));
 }
 
 /* ===============
@@ -163,14 +163,14 @@ void Tile::addGrassTile()
    =============== */
 void Tile::addFlowerTile1()
 {
-    m_frames.push_back(castResToTex(resmanager.loadResource("misctex/flowerTile11.png", RT_TEXTURE)));
-    m_frames.push_back(castResToTex(resmanager.loadResource("misctex/flowerTile12.png", RT_TEXTURE)));
-    m_frames.push_back(castResToTex(resmanager.loadResource("misctex/flowerTile13.png", RT_TEXTURE)));
+    m_frames.push_back(castResToTex(resmanager.loadResource("misctex/flowerTile11.png", RT_TEXTURE, false)));
+    m_frames.push_back(castResToTex(resmanager.loadResource("misctex/flowerTile12.png", RT_TEXTURE, false)));
+    m_frames.push_back(castResToTex(resmanager.loadResource("misctex/flowerTile13.png", RT_TEXTURE, false)));
 }
 
 void Tile::addFlowerTile2()
 {
-    m_frames.push_back(castResToTex(resmanager.loadResource("misctex/flowerTile21.png", RT_TEXTURE)));
-    m_frames.push_back(castResToTex(resmanager.loadResource("misctex/flowerTile22.png", RT_TEXTURE)));
-    m_frames.push_back(castResToTex(resmanager.loadResource("misctex/flowerTile23.png", RT_TEXTURE)));
+    m_frames.push_back(castResToTex(resmanager.loadResource("misctex/flowerTile21.png", RT_TEXTURE, false)));
+    m_frames.push_back(castResToTex(resmanager.loadResource("misctex/flowerTile22.png", RT_TEXTURE, false)));
+    m_frames.push_back(castResToTex(resmanager.loadResource("misctex/flowerTile23.png", RT_TEXTURE, false)));
 }
