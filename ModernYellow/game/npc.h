@@ -15,7 +15,8 @@ class Npc: public Sprite
 {
 public:
 
-    Npc(const int32 texU,
+    Npc(        
+        const int32 texU,
         const int32 texV,
         const std::shared_ptr<Tile> pInitTile,
         const Direction initDir,
@@ -35,6 +36,8 @@ public:
 
     void update() override; 
 
+    void switchPaletteTo(const uint32 color);
+
     void darken();
 
 private:
@@ -47,7 +50,7 @@ private:
     static const uint32 NPC_MOVE_DECISION_VAR   = 80;
 
 private:
-    
+
     uint32 m_flags;
     mutable uint32 m_decisionTimer;
     mutable uint32 m_staticRestTimer;

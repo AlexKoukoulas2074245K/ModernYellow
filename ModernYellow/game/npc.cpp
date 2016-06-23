@@ -90,6 +90,11 @@ void Npc::update()
     Sprite::update();
 }
 
+void Npc::switchPaletteTo(const uint32 color)
+{
+    Sprite::switchPaletteTo(color);
+}
+
 void Npc::darken()
 {
     Sprite::darken();

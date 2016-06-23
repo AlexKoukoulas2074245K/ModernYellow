@@ -20,6 +20,7 @@
 extern uint32 g_tileSize;
 extern pRenderer_t g_pRenderer;
 extern uint32 g_scale;
+extern uint32 g_currColor;
 
 /* Cached width of the last seen atlas texture */
 static uint32 i_cachedAtlasWidth;
@@ -331,6 +332,20 @@ void Sprite::resetFrames()
 {
     m_impl->m_currFrame = 0;
     m_impl->m_frameTime = SPRITE_ANI_DELAY;
+}
+
+void Sprite::switchPaletteTo(const uint32 color)
+{
+    for (int32 indexDir= 0; indexDir < 4; ++indexDir)
+    {
+        auto& arrayFrames = m_impl->m_anims[(Direction)indexDir];
+
+        arrayFrames[0]->swapColor(g_currColor, color);
+        arrayFrames[1]->swapColor(g_currColor, color);
+        arrayFrames[2]->swapColor(g_currColor, color);
+        arrayFrames[3]->swapColor(g_currColor, color);
+    }
+    
 }
 
 void Sprite::darken()

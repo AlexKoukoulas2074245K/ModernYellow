@@ -16,6 +16,7 @@ struct Warp
 {
     int32 forcedDir;
     string location;
+    bool routeConnection;
     uint32 col, row;
 };
 
@@ -31,6 +32,10 @@ public:
     using anitilemap_t = std::vector<std::shared_ptr<Tile>>;
     using npcs_t = std::vector<std::shared_ptr<Npc>>;
     using owobjects_t = std::vector<std::shared_ptr<OWObject>>;    
+
+public:
+
+    static std::unordered_map<string, uint32> s_locationColors;
 
 public:
 
@@ -53,6 +58,8 @@ public:
     void startWarpTo(std::shared_ptr<Warp> destination);
     
     bool isInnerDoor(std::shared_ptr<Tile> tile) const;
+
+    uint32 getCurrColor() const;
 
     bool isReady() const;
 
@@ -93,6 +100,8 @@ public:
     void resetWarping();
 
 private:
+    
+    void switchPaletteTo(const uint32 color);
 
     bool loadLevelTex();
 
@@ -105,6 +114,7 @@ private:
 private:
 
     bool m_ready;    
+    bool m_outdoors;
     string m_name;
     
     tilemap_t m_tilemap;    
@@ -118,8 +128,11 @@ private:
     std::shared_ptr<TextureResource> m_pLevelTex;      
     std::shared_ptr<TextureResource> m_pOverworldAtlas;
 
+    std::shared_ptr<Warp> m_pCurrDestination;
+
     SDL_Rect m_levelArea;
     uint32 m_rows, m_cols;
+    uint32 m_currColor;
     int32 m_xOffset, m_yOffset;
 
     int32 m_warpLevelDelay;

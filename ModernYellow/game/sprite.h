@@ -73,6 +73,8 @@ public:
     
     void resetFrames();
     
+    void switchPaletteTo(const uint32 color);
+
     void darken();
 
     void reloadFrames(

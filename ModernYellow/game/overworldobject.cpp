@@ -12,6 +12,7 @@
 
 extern uint32 g_scale;
 extern uint32 g_tileSize;
+extern uint32 g_currColor;
 extern pRenderer_t g_pRenderer;
 
 OWObject::OWObject(
@@ -62,6 +63,11 @@ void OWObject::render()
 
         SDL_RenderCopy(g_pRenderer.get(), m_pTex->getTexture().get(), nullptr, &rendArea);
     }    
+}
+
+void OWObject::switchPaletteTo(const uint32 color)
+{
+    m_pTex->swapColor(g_currColor, color);
 }
 
 void OWObject::darken()

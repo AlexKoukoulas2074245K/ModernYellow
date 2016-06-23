@@ -28,6 +28,8 @@ public:
 
     void render();
 
+    void switchPaletteTo(const uint32 color);
+
     void darken();
 
     const std::string& getDialogue() const;

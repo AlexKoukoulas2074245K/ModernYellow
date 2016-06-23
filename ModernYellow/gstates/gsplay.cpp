@@ -37,11 +37,11 @@ GSPlay::GSPlay():
     auto pAtlas = castResToTex(resmanager.loadResource("tilemaps/overworldmap.png", RT_TEXTURE));
     
     auto start = SDL_GetTicks();
-    m_pLevel = std::make_shared<Level>("ioaksLab", pAtlas);    
+    m_pLevel = std::make_shared<Level>("opallet", pAtlas);    
     m_pLevel->loadNPCData();
     
     m_pPlayer = std::make_unique<Player>(
-        m_pLevel->getTileRC(5, 12),        
+        m_pLevel->getTileRC(18, 8),        
         Direction::DIR_UP,
         m_pLevel,
         pAtlas);

@@ -60,6 +60,8 @@ public:
 
     void addSeaTile();
 
+    void switchPaletteTo(const uint32 color);
+
     void darken();
 
 private:

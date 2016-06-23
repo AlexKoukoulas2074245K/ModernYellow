@@ -30,8 +30,17 @@
 extern string g_datPath;
 extern string g_texPath;
 extern uint32 g_scale;
+extern uint32 g_currColor;
 extern uint32 g_tileSize;
 extern pRenderer_t g_pRenderer;
+
+/* =============
+   Class Objects
+   ============= */
+std::unordered_map<string, uint32> Level::s_locationColors{
+    {"opallet", envcolors::EC_PALET},
+    {"oroute1", envcolors::EC_VIRID},    
+};
 
 /* ==============
    Public Methods
@@ -42,77 +51,107 @@ Level::Level(
 
     m_name(levelName),
     m_pOverworldAtlas(pAtlas),
-    m_ready(false),    
+    m_ready(false),
+    m_outdoors(false),
     m_warpLevel(0),
     m_warpLevelDelay(LEVEL_WARP_LEVEL_DELAY),
     m_rows(0),
     m_cols(0),
     m_xOffset(0),
-    m_yOffset(0)   
+    m_yOffset(0),
+    m_pCurrDestination(nullptr)
 {    
+    m_outdoors = m_name[0] == 'o';
+    m_currColor = s_locationColors.count(m_name) ? s_locationColors[m_name] : g_currColor;
+
     if (!loadLevelTex()) return;
     if (!readLevelData()) return;            
     if (!readLevelObjects()) return;
     if (!readLevelWarps()) return;
+
+    switchPaletteTo(m_currColor);
 
     // Calculate level area
     m_levelArea.x = 0;
     m_levelArea.y = 0;
     m_levelArea.w = m_pLevelTex->getSurface().get()->w * g_scale;
     m_levelArea.h = m_pLevelTex->getSurface().get()->h * g_scale;
-    m_ready = true;
+    m_ready = true;    
 }
 
 Level::~Level() = default;
 
 void Level::update()
 {
-    if (m_warpLevel > 0 && --m_warpLevelDelay <= 0)
+    if (m_warpLevel > 0 && 
+        (--m_warpLevelDelay <= 0 || m_pCurrDestination->routeConnection))
     {
         m_warpLevelDelay = LEVEL_WARP_LEVEL_DELAY;
         m_warpLevel++;
         
-        auto normXOffset = -m_xOffset / (int32)g_scale;
-        auto normYOffset = -m_yOffset / (int32)g_scale;
+        // Warp is not a route connection
+        if (!m_pCurrDestination->routeConnection)
+        {        
+            auto normXOffset = -m_xOffset / (int32)g_scale;
+            auto normYOffset = -m_yOffset / (int32)g_scale;
 
-        SDL_Rect darkenArea = {};        
-        auto stdWidth = int32(GAME_COLS * DEFAULT_TILE_SIZE);
-        auto stdHeight = int32(GAME_ROWS * DEFAULT_TILE_SIZE);
+            SDL_Rect darkenArea = {};        
+            auto stdWidth = int32(GAME_COLS * DEFAULT_TILE_SIZE);
+            auto stdHeight = int32(GAME_ROWS * DEFAULT_TILE_SIZE);
 
-        darkenArea.x = normXOffset < 0 || normXOffset + stdWidth > m_pLevelTex->getSurface()->w ? 0 : normXOffset;
-        darkenArea.y = normYOffset < 0 || normYOffset + stdHeight> m_pLevelTex->getSurface()->h ? 0 : normYOffset;
-        darkenArea.w = normXOffset < 0 || normXOffset + stdWidth > m_pLevelTex->getSurface()->w ? m_pLevelTex->getSurface()->w : stdWidth;
-        darkenArea.h = normYOffset < 0 || normYOffset + stdHeight> m_pLevelTex->getSurface()->h ? m_pLevelTex->getSurface()->h : stdHeight;
+            darkenArea.x = normXOffset < 0 || normXOffset + stdWidth > m_pLevelTex->getSurface()->w ? 0 : normXOffset;
+            darkenArea.y = normYOffset < 0 || normYOffset + stdHeight> m_pLevelTex->getSurface()->h ? 0 : normYOffset;
+            darkenArea.w = normXOffset < 0 || normXOffset + stdWidth > m_pLevelTex->getSurface()->w ? m_pLevelTex->getSurface()->w : stdWidth;
+            darkenArea.h = normYOffset < 0 || normYOffset + stdHeight> m_pLevelTex->getSurface()->h ? m_pLevelTex->getSurface()->h : stdHeight;
                
-        m_pLevelTex->darken(darkenArea);        
+            m_pLevelTex->darken(darkenArea);        
 
-        for (const auto& npc: m_npcs)
-        {
-            npc->darken();
+            for (const auto& npc: m_npcs)
+            {
+                npc->darken();
+            }
+
+            for (const auto& owo: m_owobjects)
+            {
+                owo->darken();
+            }
+
+            for (const auto& seaTile : m_seaTiles)
+            {
+                seaTile->darken();
+            }
+
+            for (const auto& flowerTile : m_flowerTiles)
+            {
+                flowerTile->darken();
+            }
+
+            for (const auto& encTile: m_encounterTiles)
+            {
+                encTile->darken();
+            }
         }
-
-        for (const auto& owo: m_owobjects)
-        {
-            owo->darken();
-        }
-
-        for (const auto& seaTile : m_seaTiles)
-        {
-            seaTile->darken();
-        }
-
-        for (const auto& flowerTile : m_flowerTiles)
-        {
-            flowerTile->darken();
-        }
-
+  
         if (m_warpLevel == LEVEL_WARP_LEVEL_MAX)
         {
+            m_tilemap.clear();
+            m_flowerTiles.clear();
+            m_encounterTiles.clear();
+            m_owobjects.clear();
+            m_seaTiles.clear();
+            m_npcs.clear();
+
             if (!loadLevelTex()) return;
             if (!readLevelData()) return;
             if (!readLevelObjects()) return;
             if (!readLevelWarps()) return;
             if (!loadNPCData()) return;
+            
+            if (m_pCurrDestination->routeConnection)
+            {                
+                m_currColor = s_locationColors[m_name];
+                switchPaletteTo(m_currColor);
+            }
 
             // Calculate level area
             m_levelArea.x = 0;
@@ -120,8 +159,9 @@ void Level::update()
             m_levelArea.w = m_pLevelTex->getSurface().get()->w * g_scale;
             m_levelArea.h = m_pLevelTex->getSurface().get()->h * g_scale;
             m_ready = true;
-
-        }
+            m_pCurrDestination = nullptr;
+            m_outdoors = m_name[0] == 'o';
+        }        
     }
 
     for (const auto& npc : m_npcs)
@@ -208,13 +248,16 @@ void Level::renderEncOccTiles()
 
 void Level::startWarpTo(std::shared_ptr<Warp> destination)
 {
+    m_pCurrDestination = destination;
     setFrozenNpcs(true);
-    m_warpLevel = 1;
+    m_warpLevel = destination->routeConnection ? LEVEL_WARP_LEVEL_MAX - 1: 1;
     m_name = destination->location;            
 }
 
 bool Level::isInnerDoor(std::shared_ptr<Tile> tile) const
-{
+{    
+    if (m_outdoors) return false;
+
     auto pLeftTile  = getTileLeftOf(tile);
     auto pRightTile = getTileRightOf(tile);
 
@@ -222,6 +265,11 @@ bool Level::isInnerDoor(std::shared_ptr<Tile> tile) const
     if (tile->getWarp() && pRightTile && pRightTile->getWarp()) return true;
 
     return false;
+}
+
+uint32 Level::getCurrColor() const
+{
+    return m_currColor;
 }
 
 bool Level::isReady() const
@@ -397,6 +445,35 @@ void Level::resetWarping()
 /* ===============
    Private Methods
    =============== */
+void Level::switchPaletteTo(const uint32 color)
+{
+
+    for (const auto& npc : m_npcs)
+    {
+        npc->switchPaletteTo(s_locationColors[m_name]);
+    }
+
+    for (const auto& owo : m_owobjects)
+    {
+        owo->switchPaletteTo(s_locationColors[m_name]);
+    }
+
+    for (const auto& seaTile : m_seaTiles)
+    {
+        seaTile->switchPaletteTo(s_locationColors[m_name]);
+    }
+
+    for (const auto& flowerTile : m_flowerTiles)
+    {
+        flowerTile->switchPaletteTo(s_locationColors[m_name]);
+    }
+
+    for (const auto& encTile: m_encounterTiles)
+    {
+        encTile->switchPaletteTo(s_locationColors[m_name]);
+    }
+}
+
 bool Level::loadLevelTex()
 {
     m_pLevelTex = castResToTex(resmanager.loadResource("levels/" + m_name + ".png", RT_TEXTURE));
@@ -583,15 +660,17 @@ bool Level::readLevelWarps()
         auto rhsLocCol = std::atoi(rhsCoords[0].c_str());
         auto rhsLocRow = std::atoi(rhsCoords[1].c_str());
 
-        auto lhsWarp      = std::make_shared<Warp>();
-        lhsWarp->location = lhsLocation;
-        lhsWarp->col      = lhsLocCol;
-        lhsWarp->row      = lhsLocRow;
+        auto lhsWarp             = std::make_shared<Warp>();
+        lhsWarp->location        = lhsLocation;
+        lhsWarp->col             = lhsLocCol;
+        lhsWarp->row             = lhsLocRow;
+        lhsWarp->routeConnection = false;
 
-        auto rhsWarp      = std::make_shared<Warp>();
-        rhsWarp->location = rhsLocation;
-        rhsWarp->col      = rhsLocCol;
-        rhsWarp->row      = rhsLocRow;
+        auto rhsWarp             = std::make_shared<Warp>();
+        rhsWarp->location        = rhsLocation;
+        rhsWarp->col             = rhsLocCol;
+        rhsWarp->row             = rhsLocRow;
+        rhsWarp->routeConnection = false;
 
         // Attach a warp (to the target location) to the respective
         // tile found
@@ -610,6 +689,7 @@ bool Level::readLevelWarps()
                 rhsWarp->forcedDir = -1;
             }
 
+            rhsWarp->routeConnection = lhsLocation[0] == 'o' && rhsLocation[0] == 'o';
             getTileRC(lhsWarp->col, lhsWarp->row)->addWarp(rhsWarp);
         }
         else
@@ -627,7 +707,10 @@ bool Level::readLevelWarps()
                 lhsWarp->forcedDir = -1;
             }
 
-            getTileRC(rhsWarp->col ,rhsWarp->row)->addWarp(lhsWarp);
+            if (rhsLocation[0] != 'o' || lhsLocation[0] != 'o')
+            {
+                getTileRC(rhsWarp->col, rhsWarp->row)->addWarp(lhsWarp);
+            }            
         }
     }
 

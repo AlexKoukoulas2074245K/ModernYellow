@@ -11,6 +11,7 @@
 #include "../resources/sresmanager.h"
 
 extern uint32 g_tileSize;
+extern uint32 g_currColor;
 extern pRenderer_t g_pRenderer;
 
 /* ==============
@@ -83,6 +84,14 @@ void Tile::render(const int32 xRendOffset, const int32 yRendOffset)
         m_frames[m_curFrame]->getTexture().get(),
         nullptr, 
         &rendArea);
+}
+
+void Tile::switchPaletteTo(const uint32 color)
+{
+    for (const auto& frame : m_frames)
+    {
+        frame->swapColor(g_currColor, color);        
+    }
 }
 
 void Tile::darken()

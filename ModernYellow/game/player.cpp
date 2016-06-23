@@ -27,10 +27,12 @@ struct Player::WarpInfo
     uint32 m_warpAfterCol, m_warpAfterRow;
     Direction m_warpAfterDir;
     int32 m_warpTimer;    
+    bool m_routeConnection;
 
     WarpInfo(
         const std::shared_ptr<Warp> pWarp, 
-        const Direction dir);
+        const Direction dir,
+        const bool routeConnection);
 };
 
 /* =============================
@@ -38,13 +40,15 @@ struct Player::WarpInfo
    ============================= */
 Player::WarpInfo::WarpInfo(
     const std::shared_ptr<Warp> pWarp,
-    const Direction dir)
-{
-    m_warpTimer = Level::LEVEL_WARP_LEVEL_DELAY;
-    m_warpAfterDir = pWarp->forcedDir == -1 ? dir : (Direction) pWarp->forcedDir;
-    m_warpAfterCol = pWarp->col;
-    m_warpAfterRow = pWarp->row;
-}
+    const Direction dir,
+    const bool routeConnection):
+    
+    m_warpTimer(Level::LEVEL_WARP_LEVEL_DELAY),
+    m_warpAfterDir(pWarp->forcedDir == -1 ? dir : (Direction) pWarp->forcedDir),
+    m_warpAfterCol(pWarp->col),
+    m_warpAfterRow(pWarp->row),
+    m_routeConnection(routeConnection)
+{}
 
 /* ==============
    Public Methods
@@ -89,13 +93,16 @@ void Player::update()
     // another location, and is gradually performing
     // the move along with the level
     if (m_warpInfo)
-    {        
-        if (--m_warpInfo->m_warpTimer <= 0)
+    {                
+        if (!m_warpInfo->m_routeConnection)
         {
-            m_warpInfo->m_warpTimer = Level::LEVEL_WARP_LEVEL_DELAY;
-            m_pSprite->darken();
+            if (--m_warpInfo->m_warpTimer <= 0)
+            {
+                m_warpInfo->m_warpTimer = Level::LEVEL_WARP_LEVEL_DELAY;
+                m_pSprite->darken();
+            }
         }
-
+        
         // Global darken animation has finished
         if (m_pLevelRef->getWarpLevel() == Level::LEVEL_WARP_LEVEL_MAX)
         {           
@@ -104,6 +111,12 @@ void Player::update()
                 PLAYER_TEX_U, 
                 PLAYER_TEX_V, 
                 castResToTex(resmanager.loadResource("tilemaps/overworldmap.png", RT_TEXTURE)));
+
+            if (m_warpInfo->m_routeConnection)
+            {
+                m_pSprite->switchPaletteTo(m_pLevelRef->getCurrColor());
+            }
+
             m_pSprite->teleportTo(m_pLevelRef->getTileRC(
                 m_warpInfo->m_warpAfterCol, 
                 m_warpInfo->m_warpAfterRow));
@@ -208,7 +221,7 @@ void Player::update()
             if (m_standingAtDoor)
             {
                 auto pWarp = m_pSprite->getCurrTile()->getWarp();
-                m_warpInfo = std::make_unique<WarpInfo>(pWarp, m_pSprite->getDir());                
+                m_warpInfo = std::make_unique<WarpInfo>(pWarp, m_pSprite->getDir(), pWarp->routeConnection);                
                 m_pLevelRef->startWarpTo(pWarp);
             }
             else
@@ -233,7 +246,7 @@ void Player::update()
         {
             m_pSprite->tryChangeDirection(DIR_DOWN);
             auto pWarp = m_pSprite->getCurrTile()->getWarp();
-            m_warpInfo = std::make_unique<WarpInfo>(pWarp, m_pSprite->getDir());
+            m_warpInfo = std::make_unique<WarpInfo>(pWarp, m_pSprite->getDir(), pWarp->routeConnection);
             m_pLevelRef->startWarpTo(pWarp);
         }
         else
@@ -277,7 +290,7 @@ void Player::update()
         if (currTile->getWarp() &&             
             !m_standingAtDoor)
         {                           
-            m_warpInfo = std::make_unique<WarpInfo>(pWarp, m_pSprite->getDir());
+            m_warpInfo = std::make_unique<WarpInfo>(pWarp, m_pSprite->getDir(), pWarp->routeConnection);
             m_pLevelRef->startWarpTo(pWarp);
         }        
     }      
