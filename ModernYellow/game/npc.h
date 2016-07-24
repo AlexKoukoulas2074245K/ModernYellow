@@ -24,9 +24,12 @@ public:
         const std::shared_ptr<TextureResource>& pAtlas,
         const bool movingNpc,
         const bool isTrainer,
-        const string& dialogue);
+        const string& dialogue,
+        const string& dialogueAfterInteraction);
 
     ~Npc();
+
+    void switchDialogue(); 
 
     const string& getDialogue() const;
 
@@ -55,6 +58,7 @@ private:
     mutable uint32 m_decisionTimer;
     mutable uint32 m_staticRestTimer;
     string m_dialogue;
+    string m_dialogueAfterInteraction;
     std::weak_ptr<const Level> m_pLevelRef;
     Direction m_initDir;
     

@@ -62,7 +62,8 @@ shared_ptr<Resource> SResManager::loadResource(const string& resourceName,
 
 int SResManager::isResourceCached(const string& resourceName) const
 {
-    return m_resources.count(resourceName);
+    return false;
+    //return m_resources.count(resourceName);
 }
 
 /* ===============

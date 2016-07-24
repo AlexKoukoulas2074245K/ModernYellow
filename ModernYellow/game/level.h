@@ -24,6 +24,7 @@ class Tile;
 class TextureResource;
 class Npc;
 class OWObject;
+struct SDL_Rect;
 class Level: public std::enable_shared_from_this<Level>
 {    
 public:
@@ -54,6 +55,12 @@ public:
     void render();
 
     void renderEncOccTiles();    
+
+    void initWildEncounterEffect();
+
+    void playWildEncounterEffect();
+
+    void establishNewColor();
 
     void startWarpTo(std::shared_ptr<Warp> destination);
     
@@ -115,6 +122,8 @@ private:
 
     bool readLevelWarps();
 
+    void calculateVisibleArea(SDL_Rect& output) const;
+
 private:
 
     bool m_ready;    
@@ -134,7 +143,9 @@ private:
     std::shared_ptr<TextureResource> m_pOverworldAtlas;
 
     std::shared_ptr<Warp> m_pCurrDestination;
+    std::vector<std::vector<const uint32>> m_pixelSnapshot;
 
+    SDL_Rect m_visibleArea;
     SDL_Rect m_levelArea;
     uint32 m_rows, m_cols;
     uint32 m_currColor;

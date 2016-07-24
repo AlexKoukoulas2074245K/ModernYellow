@@ -28,8 +28,16 @@ UITextbox::UITextbox(const string& text):
     m_promptNext(false),
     m_arrowPrompt(false),    
     m_arrowttl(0),
-    m_showCharDelay(UITB_CHAR_DELAY)
+    m_showCharDelay(UITB_CHAR_DELAY),
+    m_waitingForSfx(false),
+    m_itemSfxPause(0)
 {
+    if (text[0] == UITB_NO_DIALOGUE)
+    {
+        m_finished = true;
+        return;
+    }        
+
     parseText(text);    
     feedSentence();
 }
@@ -74,11 +82,27 @@ void UITextbox::update()
     // component remains inactive
     if (!m_active) return;
 
+    // Waiting for sfx to finish
+    if (m_waitingForSfx)
+    {
+        if (!--m_itemSfxPause) m_waitingForSfx = false;        
+        return;
+    }
+    
+    if (m_promptNext && m_topSentence == g_playerName + " got" &&
+        m_lastItemReceivedSentence != m_botSentence)
+    {
+        m_lastItemReceivedSentence = m_botSentence;
+        g_pMixer->playAudio("sfx/gotitem.wav", true, true);
+        m_waitingForSfx = true;
+        m_itemSfxPause = UITB_GOT_ITEM_DELAY;
+    }
+
     if ((
         ihandler.isKeyTapped(K_A) ||         
         ihandler.isKeyTapped(K_B))
         && m_promptNext)
-    {                
+    {          
         m_arrowPrompt = false;
         m_arrowttl = 0;
         m_promptNext = false;
@@ -248,6 +272,7 @@ void UITextbox::advanceIters()
     m_sentenceIndex++;
     if (m_sentenceIndex == m_dialogueIndex->end())
     {
+
         if (++m_dialogueIndex == m_mainDialogue.end())
         {
             m_lastSentence = true;

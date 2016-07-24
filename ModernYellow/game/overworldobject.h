@@ -20,6 +20,7 @@ public:
         const std::shared_ptr<TextureResource> pAtlas,
         const std::shared_ptr<Tile> pInitTile,
         const std::string& dialogue,
+        const std::string& dialogueAfterInteraction,
         const bool obtainable,
         const bool solid,
         const bool cuttable);
@@ -31,6 +32,8 @@ public:
     void switchPaletteTo(const uint32 color);
 
     void darken();
+
+    void switchDialogue();
 
     const std::string& getDialogue() const;
     
@@ -50,5 +53,6 @@ private:
     std::shared_ptr<TextureResource> m_pTex;
     std::shared_ptr<Tile> m_pTile;
     std::string m_dialogue;
+    std::string m_dialogueAfterInteraction;
     int32 m_xOffset, m_yOffset;
 };

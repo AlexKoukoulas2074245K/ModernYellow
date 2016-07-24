@@ -8,6 +8,7 @@
 #include "../mydef.h"
 
 #include <set>
+#include <vector>
 
 struct SDL_Texture;
 struct SDL_Surface;
@@ -24,8 +25,9 @@ public:
 
 public:    
 
-    using pTexture_t = std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>;
-    using pSurface_t = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>;
+    using pTexture_t      = std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>;
+    using pSurface_t      = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>;
+    using pixelSnapshot_t = std::vector<std::vector<const uint32>>;
 
     bool load() override;
     
@@ -41,6 +43,17 @@ public:
     void darken();
 
     void darken(const SDL_Rect& rect);        
+
+    /* Constructs and returns a snapshot of the pixels in the original texture
+       before starting the wild pokemon encounter animation */
+    void getPixelSnapshot(const SDL_Rect& area, pixelSnapshot_t& output) const;
+
+    /* Swaps pixels in the given area to produce the wild pokemon encounter animation 
+       for the step given */
+    void wildPokemonAnimation(
+        const pixelSnapshot_t& snapshot, 
+        const SDL_Rect& rect, 
+        const uint32 step);
 
     std::shared_ptr<TextureResource> getSubTexture(
         const uint32 tu,
@@ -71,5 +84,5 @@ private:
     
     pTexture_t m_pTexture;
     pSurface_t m_pSurface;    
-
+    
 };

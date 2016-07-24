@@ -9,6 +9,8 @@
 
 #include <SDL_log.h>
 
+//#define NO_AUDIO
+
 /* ===============
    Class Constants
    =============== */
@@ -18,7 +20,10 @@ static bool i_effectPlaying = false;
 /* ==============
    Public Methods
    ============== */
-Mixer::Mixer()
+Mixer::Mixer():
+    m_effectPlaying(false),
+    m_silenceRest(false),
+    m_activeMusic(castResToAudio(resmanager.loadResource("ambient/opallet.mp3", RT_AUDIO)))
 {
     setMusicVolume(MAX_VOLUME);
     Mix_ChannelFinished([](int channel){i_effectPlaying = false;});    
@@ -26,8 +31,35 @@ Mixer::Mixer()
 
 Mixer::~Mixer(){}
 
-void Mixer::playAudio(const std::string& audioName, const bool overrideCurrent /* false */)
+void Mixer::tick()
 {
+    if (m_effectPlaying != i_effectPlaying)
+    {
+        if (!i_effectPlaying && m_silenceRest)
+        {            
+            setMusicVolume(MAX_VOLUME);
+            m_silenceRest = false;
+        }
+        //else
+        //{
+        //    SDL_Log("Effect just started playing");
+        //}
+    }
+    m_effectPlaying = i_effectPlaying;
+}
+
+void Mixer::playAudio(
+    const std::string& audioName, 
+    const bool overrideCurrent /* false */,
+    const bool silenceRest /* false */)
+{    
+#if !defined(NO_AUDIO)
+    if (silenceRest) 
+    {
+        m_silenceRest = true;
+        setMusicVolume(0);
+    }
+
     auto audioResource = castResToAudio(resmanager.loadResource(audioName, RT_AUDIO));
     if (audioResource->isMusic())
     {
@@ -42,7 +74,8 @@ void Mixer::playAudio(const std::string& audioName, const bool overrideCurrent /
             i_effectPlaying = true;
             m_activeEffect->play(false);
         }        
-    }            
+    }
+#endif
 }
 
 const std::string& Mixer::getCurrMusicName() const

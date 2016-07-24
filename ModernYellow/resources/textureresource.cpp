@@ -9,7 +9,8 @@
 #include <SDL_image.h>
 
 extern string g_texPath;
-extern uint32 g_currColor;
+extern uint32 g_overworldTilemapColor;
+extern uint32 g_currentLevelColor;
 extern pRenderer_t g_pRenderer;
 
 /* Color Masks */
@@ -79,6 +80,7 @@ void TextureResource::compileTexture()
 
 void TextureResource::swapColor(const uint32 src, const uint32 dst)
 {
+    if (src == dst) return;
     if (SDL_MUSTLOCK(m_pSurface.get()))
     {
         SDL_LockSurface(m_pSurface.get());
@@ -94,12 +96,141 @@ void TextureResource::swapColor(const uint32 src, const uint32 dst)
             if (getPixelAt(x, y) == src)
             {
                 setPixelAt(dst, x, y);
-            }
+            }            
         }
     }
 
     compileTexture();
 
+    if (SDL_MUSTLOCK(m_pSurface.get()))
+    {
+        SDL_UnlockSurface(m_pSurface.get());
+    }
+}
+
+void TextureResource::getPixelSnapshot(const SDL_Rect& area, pixelSnapshot_t& output) const
+{    
+    for (auto y = 0; y < area.h; ++y)
+    {
+        output.push_back(std::vector<const uint32>(area.w));
+        for (auto x = 0; x < area.w; ++x)
+        {
+            output[y][x] = getPixelAt(x + area.x, y + area.y);
+        }
+    }
+}
+
+void TextureResource::wildPokemonAnimation(
+    const pixelSnapshot_t& snapshot, 
+    const SDL_Rect& rect,
+    const uint32 step)
+{    
+    if (SDL_MUSTLOCK(m_pSurface.get()))
+    {
+        SDL_LockSurface(m_pSurface.get());
+    }
+    
+    switch (step)
+    {
+        case 1:
+        case 5:
+        {
+            for (int y = 0; y < rect.h; ++y)
+            {
+                for (int x = 0; x < rect.w; ++x)
+                {
+                    const auto currPixel = snapshot[y][x];
+
+                    if      (currPixel == envcolors::EC_WHITE) setPixelAt(g_currentLevelColor, x + rect.x, y + rect.y);
+                    else if (currPixel == g_currentLevelColor) setPixelAt(envcolors::EC_CBLUE, x + rect.x, y + rect.y);
+                    else if (currPixel == envcolors::EC_CBLUE) setPixelAt(envcolors::EC_BLACK, x + rect.x, y + rect.y);                    
+                }
+            }
+        } break;
+
+        case 2:
+        case 4:
+        {
+            for (int y = 0; y < rect.h; ++y)
+            {
+                for (int x = 0; x < rect.w; ++x)
+                {
+                    const auto currPixel = snapshot[y][x];
+
+                    if (currPixel == envcolors::EC_WHITE) setPixelAt(envcolors::EC_CBLUE, x + rect.x, y + rect.y);
+                    else setPixelAt(envcolors::EC_BLACK, x + rect.x, y + rect.y);                    
+                }
+            }
+        } break;
+
+        case 3:
+        {
+            for (int y = 0; y < rect.h; ++y)
+            {
+                for (int x = 0; x < rect.w; ++x)
+                {                                        
+                    setPixelAt(envcolors::EC_BLACK, x + rect.x, y + rect.y);
+                }
+            }
+        } break;
+
+        case 6:
+        case 12:
+        {
+            for (int y = 0; y < rect.h; ++y)
+            {
+                for (int x = 0; x < rect.w; ++x)
+                {
+                    setPixelAt(snapshot[y][x], x + rect.x, y + rect.y);
+                }
+            }
+        } break;
+
+        case 7:
+        case 11:
+        {
+            for (int y = 0; y < rect.h; ++y)
+            {
+                for (int x = 0; x < rect.w; ++x)
+                {
+                    const auto currPixel = snapshot[y][x];
+
+                    if (currPixel == g_currentLevelColor) setPixelAt(envcolors::EC_WHITE, x + rect.x, y + rect.y);
+                    else if (currPixel == envcolors::EC_CBLUE) setPixelAt(g_currentLevelColor, x + rect.x, y + rect.y);
+                    else if (currPixel == envcolors::EC_BLACK) setPixelAt(envcolors::EC_CBLUE, x + rect.x, y + rect.y);
+                }
+            }
+        } break;
+ 
+        case 8:
+        case 10:
+        {
+            for (int y = 0; y < rect.h; ++y)
+            {
+                for (int x = 0; x < rect.w; ++x)
+                {
+                    const auto currPixel = snapshot[y][x];
+
+                    if (currPixel == envcolors::EC_BLACK) setPixelAt(envcolors::EC_CBLUE, x + rect.x, y + rect.y);
+                    else setPixelAt(envcolors::EC_WHITE, x + rect.x, y + rect.y);
+                }
+            }
+        } break;
+
+        case 9:
+        {
+            for (int y = 0; y < rect.h; ++y)
+            {
+                for (int x = 0; x < rect.w; ++x)
+                {
+                    setPixelAt(envcolors::EC_WHITE, x + rect.x, y + rect.y);
+                }
+            }
+        } break;
+    }
+
+    compileTexture();
+    
     if (SDL_MUSTLOCK(m_pSurface.get()))
     {
         SDL_UnlockSurface(m_pSurface.get());
@@ -117,9 +248,8 @@ void TextureResource::darken()
     darken(r);
 }
 
-
 void TextureResource::darken(const SDL_Rect& rect)
-{
+{    
     if (SDL_MUSTLOCK(m_pSurface.get()))
     {
         SDL_LockSurface(m_pSurface.get());
@@ -130,12 +260,11 @@ void TextureResource::darken(const SDL_Rect& rect)
         for (int32 x = rect.x; x < rect.x + rect.w; ++x)
         {            
             // Grab curr pixel
-            uint32 currPixel = getPixelAt(x, y);         
-
-            if (currPixel == envcolors::EC_WHITE) setPixelAt(g_currColor, x, y);
-            else if (currPixel == g_currColor) setPixelAt(envcolors::EC_CBLUE, x, y);
+            uint32 currPixel = getPixelAt(x, y);                     
+            if (currPixel == envcolors::EC_WHITE) setPixelAt(g_currentLevelColor, x, y);
+            else if (currPixel == g_currentLevelColor) setPixelAt(envcolors::EC_CBLUE, x, y);
             else if (currPixel == envcolors::EC_CBLUE) setPixelAt(envcolors::EC_BLACK, x, y);    
-            else if (currPixel == 16777215) setPixelAt(0, x, y);
+            else if (currPixel == 16777215) setPixelAt(0, x, y);            
         }
     }
 

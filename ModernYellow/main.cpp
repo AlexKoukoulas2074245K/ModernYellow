@@ -43,17 +43,18 @@ string g_texPath    = g_assetPath + "tex/";
 string g_audioPath  = g_assetPath + "audio/";
 
 // Global game related variables
-uint32 g_fullscreen = 0;
-uint32 g_width      = gc_origWidth;
-uint32 g_height     = gc_origHeight;
-uint32 g_vsync      = 1;
-uint32 g_sfxVol     = 1;
-uint32 g_musicVol   = 1;
-uint32 g_scale      = 1;
-uint32 g_tileSize   = 16;
-uint32 g_currColor  = envcolors::EC_PALET;
-string g_playerName = "Ash";
-string g_rivalName  = "Garry";
+uint32 g_fullscreen            = 0;
+uint32 g_width                 = gc_origWidth;
+uint32 g_height                = gc_origHeight;
+uint32 g_vsync                 = 1;
+uint32 g_sfxVol                = 1;
+uint32 g_musicVol              = 1;
+uint32 g_scale                 = 1;
+uint32 g_tileSize              = 16;
+uint32 g_overworldTilemapColor = envcolors::EC_PALET;
+uint32 g_currentLevelColor     = envcolors::EC_PALET;
+string g_playerName            = "Ash";
+string g_rivalName             = "Garry";
 
 // Global Systems
 pRenderer_t g_pRenderer;
@@ -165,6 +166,9 @@ int main(int argc, char** argv)
         // State update       
         gstates.front()->update();        
         
+        // Mixer update
+        g_pMixer->tick();
+
         // State rendering
         SDL_SetRenderDrawColor(g_pRenderer.get(), 
                                RED(envcolors::EC_BLACK),

@@ -78,6 +78,9 @@ Player::Player(
 
     // Play respective level music
     g_pMixer->playAudio(m_pLevelRef->getLevelAmbientName());
+
+    // Switch Palette
+    m_pSprite->switchPaletteTo(m_pLevelRef->getCurrColor());
 }
 
 Player::~Player(){}
@@ -92,6 +95,11 @@ void Player::update()
 
         if (m_pTextbox->isFinished())
         {
+            if (m_lastNpcInteractedWith)
+                m_lastNpcInteractedWith->switchDialogue();
+            else if (m_lastOWObjectInteractedWith)
+                m_lastOWObjectInteractedWith->switchDialogue();
+
             m_pTextbox = nullptr;
         }
         return;
@@ -100,7 +108,7 @@ void Player::update()
     if (m_switchingAmbient)
     {        
         // Fade out to next level's ambient music
-        auto currVol = g_pMixer->getMusicVolume() - 2; 
+        auto currVol = g_pMixer->getMusicVolume() - 2;         
         g_pMixer->setMusicVolume(currVol);
         
         if (currVol <= 0)
@@ -133,16 +141,13 @@ void Player::update()
                 PLAYER_TEX_U, 
                 PLAYER_TEX_V, 
                 castResToTex(resmanager.loadResource("tilemaps/overworldmap.png", RT_TEXTURE)));
-
-            if (m_warpInfo->m_routeConnection)
-            {
-                m_pSprite->switchPaletteTo(m_pLevelRef->getCurrColor());
-            }
+            
+            m_pSprite->switchPaletteTo(m_pLevelRef->getCurrColor());            
 
             m_pSprite->teleportTo(m_pLevelRef->getTileRC(
                 m_warpInfo->m_warpAfterCol, 
                 m_warpInfo->m_warpAfterRow));
-
+            
             // If the player moved from an inside location to an outside one, the player
             // should start in moving state targeting the tile below the door of the building
             if (m_standingAtDoor)
@@ -155,13 +160,9 @@ void Player::update()
             m_firstTileAfterWarp = true;
             m_warpInfo = nullptr;
             m_standingAtDoor = false;
-            m_pLevelRef->resetWarping();
-
-            if (m_pLevelRef->getLevelAmbientName() != g_pMixer->getCurrMusicName())
-            {
-                SDL_Log(("Switching to: " + m_pLevelRef->getLevelAmbientName()).c_str());
-                m_switchingAmbient = true;                
-            }            
+            m_pLevelRef->resetWarping();            
+            m_pLevelRef->establishNewColor();
+            if (m_pLevelRef->getLevelAmbientName() != g_pMixer->getCurrMusicName()) m_switchingAmbient = true;                            
         }
         
         return;
@@ -174,66 +175,66 @@ void Player::update()
         {
             case DIR_DOWN:  
             {
-                auto pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileBelow(m_pSprite->getCurrTile())); 
-                auto pOwo = m_pLevelRef->getOWObjectAt(m_pLevelRef->getTileBelow(m_pSprite->getCurrTile()));
+                m_lastNpcInteractedWith = m_pLevelRef->getNpcAt(m_pLevelRef->getTileBelow(m_pSprite->getCurrTile())); 
+                m_lastOWObjectInteractedWith = m_pLevelRef->getOWObjectAt(m_pLevelRef->getTileBelow(m_pSprite->getCurrTile()));
 
-                if (pNpc)
+                if (m_lastNpcInteractedWith)
                 {
-                    pNpc->tryChangeDirection(DIR_UP);
-                    m_pTextbox = std::make_unique<UITextbox>(pNpc->getDialogue());                    
+                    m_lastNpcInteractedWith->tryChangeDirection(DIR_UP);
+                    m_pTextbox = std::make_unique<UITextbox>(m_lastNpcInteractedWith->getDialogue());                    
                 }
-                else if (pOwo)
+                else if (m_lastOWObjectInteractedWith)
                 {                    
-                    m_pTextbox = std::make_unique<UITextbox>(pOwo->getDialogue());
+                    m_pTextbox = std::make_unique<UITextbox>(m_lastOWObjectInteractedWith->getDialogue());
                 }
 
             } break;
 
             case DIR_UP:    
             {
-                auto pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileAbove(m_pSprite->getCurrTile()));
-                auto pOwo = m_pLevelRef->getOWObjectAt(m_pLevelRef->getTileAbove(m_pSprite->getCurrTile()));
+                m_lastNpcInteractedWith = m_pLevelRef->getNpcAt(m_pLevelRef->getTileAbove(m_pSprite->getCurrTile()));
+                m_lastOWObjectInteractedWith = m_pLevelRef->getOWObjectAt(m_pLevelRef->getTileAbove(m_pSprite->getCurrTile()));
 
-                if (pNpc)
+                if (m_lastNpcInteractedWith)
                 {
-                    pNpc->tryChangeDirection(DIR_DOWN);
-                    m_pTextbox = std::make_unique<UITextbox>(pNpc->getDialogue());
+                    m_lastNpcInteractedWith->tryChangeDirection(DIR_DOWN);
+                    m_pTextbox = std::make_unique<UITextbox>(m_lastNpcInteractedWith->getDialogue());
                 }
-                else if (pOwo)
+                else if (m_lastOWObjectInteractedWith)
                 {
-                    m_pTextbox = std::make_unique<UITextbox>(pOwo->getDialogue());
+                    m_pTextbox = std::make_unique<UITextbox>(m_lastOWObjectInteractedWith->getDialogue());
                 }
             } break;
 
             case DIR_LEFT:  
             {
-                auto pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileLeftOf(m_pSprite->getCurrTile())); 
-                auto pOwo = m_pLevelRef->getOWObjectAt(m_pLevelRef->getTileLeftOf(m_pSprite->getCurrTile()));
+                m_lastNpcInteractedWith = m_pLevelRef->getNpcAt(m_pLevelRef->getTileLeftOf(m_pSprite->getCurrTile())); 
+                m_lastOWObjectInteractedWith = m_pLevelRef->getOWObjectAt(m_pLevelRef->getTileLeftOf(m_pSprite->getCurrTile()));
 
-                if (pNpc)
+                if (m_lastNpcInteractedWith)
                 {
-                    pNpc->tryChangeDirection(DIR_RIGHT);
-                    m_pTextbox = std::make_unique<UITextbox>(pNpc->getDialogue());
+                    m_lastNpcInteractedWith->tryChangeDirection(DIR_RIGHT);
+                    m_pTextbox = std::make_unique<UITextbox>(m_lastNpcInteractedWith->getDialogue());
                 }
-                else if (pOwo)
+                else if (m_lastOWObjectInteractedWith)
                 {
-                    m_pTextbox = std::make_unique<UITextbox>(pOwo->getDialogue());
+                    m_pTextbox = std::make_unique<UITextbox>(m_lastOWObjectInteractedWith->getDialogue());
                 }
             } break;
 
             case DIR_RIGHT: 
             {
-                auto pNpc = m_pLevelRef->getNpcAt(m_pLevelRef->getTileRightOf(m_pSprite->getCurrTile())); 
-                auto pOwo = m_pLevelRef->getOWObjectAt(m_pLevelRef->getTileRightOf(m_pSprite->getCurrTile()));
+                m_lastNpcInteractedWith = m_pLevelRef->getNpcAt(m_pLevelRef->getTileRightOf(m_pSprite->getCurrTile())); 
+                m_lastOWObjectInteractedWith = m_pLevelRef->getOWObjectAt(m_pLevelRef->getTileRightOf(m_pSprite->getCurrTile()));
 
-                if (pNpc)
+                if (m_lastNpcInteractedWith)
                 {
-                    pNpc->tryChangeDirection(DIR_LEFT);
-                    m_pTextbox = std::make_unique<UITextbox>(pNpc->getDialogue());
+                    m_lastNpcInteractedWith->tryChangeDirection(DIR_LEFT);
+                    m_pTextbox = std::make_unique<UITextbox>(m_lastNpcInteractedWith->getDialogue());
                 }
-                else if (pOwo)
+                else if (m_lastOWObjectInteractedWith)
                 {
-                    m_pTextbox = std::make_unique<UITextbox>(pOwo->getDialogue());
+                    m_pTextbox = std::make_unique<UITextbox>(m_lastOWObjectInteractedWith->getDialogue());
                 }
             } break;
         }

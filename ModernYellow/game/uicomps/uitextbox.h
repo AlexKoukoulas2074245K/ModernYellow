@@ -56,13 +56,16 @@ private:
     static const uint8 UITB_PARAGRAPH_DELIM = '@';
     static const uint8 UITB_SENTENCE_DELIM = '#';
     static const uint8 UITB_BOOLEAN_DELIM = ';';
+    static const uint8 UITB_NO_DIALOGUE = '%';
+    static const uint32 UITB_GOT_ITEM_DELAY = 100;
+    static const uint32 UITB_QUEST_ITEM_DELAY = 130;
 
 private:
 
     dialogue_t m_mainDialogue;
     dialogue_t m_yesdialogue;
     dialogue_t m_nodialogue;
-
+    
     dialogue_iter_t m_dialogueIndex;
     sentence_iter_t m_sentenceIndex;
     
@@ -74,9 +77,14 @@ private:
     string m_rendTopSentence;
     string m_rendBotSentence;
 
+    string m_lastItemReceivedSentence;
+
     int32 m_showCharDelay;
     int32 m_arrowttl;
+    int32 m_itemSfxPause;
 
+    
+    bool m_waitingForSfx;
     bool m_promptNext;
     bool m_firstSentence;
     bool m_lastSentence;

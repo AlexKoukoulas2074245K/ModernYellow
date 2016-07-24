@@ -20,13 +20,15 @@ Npc::Npc(
     const std::shared_ptr<TextureResource>& pAtlas,
     const bool movingNpc,
     const bool isTrainer,
-    const string& dialogue):
+    const string& dialogue,
+    const string& dialogueAfterInteraction):
 
     Sprite(texU, texV, pInitTile, initDir, pLevelRef, pAtlas), 
     m_initDir(initDir),
     m_pLevelRef(pLevelRef),
     m_decisionTimer(0U),
-    m_dialogue(dialogue),
+    m_dialogue(std::move(dialogue)),
+    m_dialogueAfterInteraction(std::move(dialogueAfterInteraction)),
     m_staticRestTimer(0U),
     m_flags(0U)
 {
@@ -98,6 +100,11 @@ void Npc::switchPaletteTo(const uint32 color)
 void Npc::darken()
 {
     Sprite::darken();
+}
+
+void Npc::switchDialogue()
+{
+    m_dialogue = m_dialogueAfterInteraction;
 }
 
 const string& Npc::getDialogue() const

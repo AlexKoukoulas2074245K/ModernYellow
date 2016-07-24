@@ -33,13 +33,23 @@ extern uint32 g_scale;
 extern uint32 g_currColor;
 extern uint32 g_tileSize;
 extern pRenderer_t g_pRenderer;
+extern uint32 g_currentLevelColor;
 
 /* =============
    Class Objects
    ============= */
 std::unordered_map<string, uint32> Level::s_locationColors{
     {"opallet", envcolors::EC_PALET},
-    {"oroute1", envcolors::EC_VIRID},    
+    {"oroute1", envcolors::EC_VIRID},
+    {"ioaksLab", envcolors::EC_PALET},
+    {"iplayerHouse1", envcolors::EC_PALET},
+    {"iplayerHouse2", envcolors::EC_PALET},
+    {"irivalHouse", envcolors::EC_PALET},
+    {"oviridian", envcolors::EC_VIRID},
+    {"iviridianPokeCenter", envcolors::EC_VIRID},
+    {"iviridianMarket", envcolors::EC_VIRID},
+    {"iviridian1", envcolors::EC_VIRID},
+    {"iviridian2", envcolors::EC_VIRID}
 };
 
 /* ==============
@@ -62,14 +72,12 @@ Level::Level(
     m_pCurrDestination(nullptr)
 {    
     m_outdoors = m_name[0] == 'o';
-    m_currColor = s_locationColors.count(m_name) ? s_locationColors[m_name] : g_currColor;
-
+    m_currColor = s_locationColors[m_name];
+    
     if (!loadLevelTex()) return;
     if (!readLevelData()) return;            
     if (!readLevelObjects()) return;
     if (!readLevelWarps()) return;
-
-    switchPaletteTo(m_currColor);
 
     // Calculate level area
     m_levelArea.x = 0;
@@ -91,19 +99,9 @@ void Level::update()
         
         // Warp is not a route connection
         if (!m_pCurrDestination->routeConnection)
-        {        
-            auto normXOffset = -m_xOffset / (int32)g_scale;
-            auto normYOffset = -m_yOffset / (int32)g_scale;
-
+        {                    
             SDL_Rect darkenArea = {};        
-            auto stdWidth = int32(GAME_COLS * DEFAULT_TILE_SIZE);
-            auto stdHeight = int32(GAME_ROWS * DEFAULT_TILE_SIZE);
-
-            darkenArea.x = normXOffset < 0 || normXOffset + stdWidth > m_pLevelTex->getSurface()->w ? 0 : normXOffset;
-            darkenArea.y = normYOffset < 0 || normYOffset + stdHeight> m_pLevelTex->getSurface()->h ? 0 : normYOffset;
-            darkenArea.w = normXOffset < 0 || normXOffset + stdWidth > m_pLevelTex->getSurface()->w ? m_pLevelTex->getSurface()->w : stdWidth;
-            darkenArea.h = normYOffset < 0 || normYOffset + stdHeight> m_pLevelTex->getSurface()->h ? m_pLevelTex->getSurface()->h : stdHeight;
-               
+            calculateVisibleArea(darkenArea);
             m_pLevelTex->darken(darkenArea);        
 
             for (const auto& npc: m_npcs)
@@ -150,7 +148,7 @@ void Level::update()
             if (m_pCurrDestination->routeConnection)
             {                
                 m_currColor = s_locationColors[m_name];
-                switchPaletteTo(m_currColor);
+                switchPaletteTo(m_currColor);                
             }
 
             // Calculate level area
@@ -186,7 +184,7 @@ void Level::update()
 }
 
 void Level::render()
-{
+{    
     // First layer is the sea tiles beneath everything else
     for (const auto& seaTile : m_seaTiles)
     {
@@ -246,6 +244,25 @@ void Level::renderEncOccTiles()
     }
 }
 
+void Level::initWildEncounterEffect()
+{        
+    calculateVisibleArea(m_visibleArea);
+    m_pLevelTex->getPixelSnapshot(m_visibleArea, m_pixelSnapshot);
+}
+
+void Level::playWildEncounterEffect()
+{
+    static int i = 1;
+    m_pLevelTex->wildPokemonAnimation(m_pixelSnapshot, m_visibleArea, i++);
+
+    if (i > 12) i = 1;
+}
+
+void Level::establishNewColor()
+{
+    g_currentLevelColor = m_currColor;
+}
+
 void Level::startWarpTo(std::shared_ptr<Warp> destination)
 {
     m_pCurrDestination = destination;
@@ -302,14 +319,16 @@ bool Level::loadNPCData()
     if (!pNPCResource) return false;
 
     // Get Line by Line content
-    auto pContent = pNPCResource->getContent();
+    auto content = pNPCResource->getContent();
 
-    for (size_t lineIndex = 0; lineIndex < pContent.size(); lineIndex += 2)
+    for (size_t lineIndex = 0; lineIndex < content.size(); lineIndex += 2)
     {
-        const auto& line = pContent[lineIndex];
-        const auto& dialogue = pContent[lineIndex + 1];
+        const auto& line = content[lineIndex];
+        const auto allDialogues = string_utils::split(content[lineIndex + 1], '&');
+        const auto initDialogue = allDialogues[0];
+        const auto dialogueAfterInteraction = allDialogues.size() > 1 ? allDialogues[1] : allDialogues[0];
 
-        if (string_utils::startsWith(line, m_name))
+        if (string_utils::split(line, ' ')[0] == m_name)
         {
             auto lineComps   = string_utils::split(line, ' ');
             auto vecPosComps = string_utils::split(lineComps[1], ',');
@@ -327,10 +346,12 @@ bool Level::loadNPCData()
                 m_pOverworldAtlas,
                 movingNpc,                
                 isTrainer,
-                dialogue));
+                initDialogue,
+                dialogueAfterInteraction));
         }
     }    
-
+    switchPaletteTo(m_currColor);
+    
     return true;
 }
 
@@ -621,9 +642,11 @@ bool Level::readLevelObjects()
     for (size_t lineIndex = 0; lineIndex < content.size(); lineIndex += 2)
     {
         const auto& line = content[lineIndex];
-        const auto& dialogue = content[lineIndex + 1];
+        const auto allDialogues = string_utils::split(content[lineIndex + 1], '&');
+        const auto initDialogue = allDialogues[0];
+        const auto dialogueAfterInteraction = allDialogues.size() > 1 ? allDialogues[1] : allDialogues[0];
 
-        if (string_utils::startsWith(line, m_name))
+        if (string_utils::split(line, ' ')[0] == m_name)
         {
             auto lineComps   = string_utils::split(line, ' ');
             auto vecPosComps = string_utils::split(lineComps[1], ',');
@@ -637,7 +660,8 @@ bool Level::readLevelObjects()
                 std::atoi(texUVComps[1].c_str()) * DEFAULT_TILE_SIZE,
                 m_pOverworldAtlas,
                 getTileRC(std::atoi(vecPosComps[0].c_str()), std::atoi(vecPosComps[1].c_str())),                
-                dialogue,
+                initDialogue,
+                dialogueAfterInteraction,
                 obtainable,
                 solid,
                 cuttable));
@@ -728,4 +752,19 @@ bool Level::readLevelWarps()
     }
 
     return true;
+}
+
+void Level::calculateVisibleArea(SDL_Rect& output) const
+{
+    auto normXOffset = -m_xOffset / (int32) g_scale;
+    auto normYOffset = -m_yOffset / (int32) g_scale;
+    
+    auto stdWidth = int32(GAME_COLS * DEFAULT_TILE_SIZE);
+    auto stdHeight = int32(GAME_ROWS * DEFAULT_TILE_SIZE);
+
+    output.x = normXOffset < 0 || normXOffset + stdWidth > m_pLevelTex->getSurface()->w ? 0 : normXOffset;
+    output.y = normYOffset < 0 || normYOffset + stdHeight> m_pLevelTex->getSurface()->h ? 0 : normYOffset;
+    output.w = normXOffset < 0 || normXOffset + stdWidth > m_pLevelTex->getSurface()->w ? m_pLevelTex->getSurface()->w : stdWidth;
+    output.h = normYOffset < 0 || normYOffset + stdHeight> m_pLevelTex->getSurface()->h ? m_pLevelTex->getSurface()->h : stdHeight;
+
 }

@@ -5,14 +5,13 @@
 
 #include "overworldobject.h"
 #include "tile.h"
-#include "../resources/sresmanager.h"
 #include "../resources/textureresource.h"
 
 #include <SDL_render.h>
 
 extern uint32 g_scale;
 extern uint32 g_tileSize;
-extern uint32 g_currColor;
+extern uint32 g_overworldTilemapColor;
 extern pRenderer_t g_pRenderer;
 
 OWObject::OWObject(
@@ -21,13 +20,15 @@ OWObject::OWObject(
     const std::shared_ptr<TextureResource> pAtlas,
     const std::shared_ptr<Tile> pInitTile,
     const std::string& dialogue,
+    const std::string& dialogueAfterInteraction,
     const bool obtainable,
     const bool solid,
     const bool cuttable):
 
     m_pTile(pInitTile),
     m_pTex(nullptr),
-    m_dialogue(dialogue),
+    m_dialogue(std::move(dialogue)),
+    m_dialogueAfterInteraction(std::move(dialogueAfterInteraction)),
     m_xOffset(0),
     m_yOffset(0)
 {
@@ -67,12 +68,17 @@ void OWObject::render()
 
 void OWObject::switchPaletteTo(const uint32 color)
 {
-    m_pTex->swapColor(g_currColor, color);
+    m_pTex->swapColor(g_overworldTilemapColor, color);
 }
 
 void OWObject::darken()
 {
     m_pTex->darken();
+}
+
+void OWObject::switchDialogue()
+{
+    m_dialogue = m_dialogueAfterInteraction;
 }
 
 const std::string& OWObject::getDialogue() const

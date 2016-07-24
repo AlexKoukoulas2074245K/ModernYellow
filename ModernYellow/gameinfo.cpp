@@ -18,7 +18,8 @@ extern std::string g_datPath;
    =================== */
 struct GameInfo::gameInfoImpl
 {
-    Json::Value m_root;    
+    Json::Value m_pkmnRoot;    
+    Json::Value m_itemRoot;
     bool m_ready;
 };
 
@@ -43,8 +44,12 @@ bool GameInfo::isReady() const
    =============== */
 bool GameInfo::readJsonData()
 {
-    Json::Reader jsonReader;
-    std::ifstream jsonFile(g_datPath + "base_stats.json");
+    Json::Reader jsonPkmnReader;
+    std::ifstream jsonPkmnFile(g_datPath + "base_stats.json");
 
-    return jsonReader.parse(jsonFile, m_impl->m_root);    
+    //Json::Reader jsonItemReader;
+    //std::ifstream jsonItemFile(g_datPath + "items.json");
+
+    return jsonPkmnReader.parse(jsonPkmnFile, m_impl->m_pkmnRoot); //&&
+           //jsonItemReader.parse(jsonItemFile, m_impl->m_itemRoot);    
 }

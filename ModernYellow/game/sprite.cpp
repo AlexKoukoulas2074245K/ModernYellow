@@ -23,7 +23,7 @@ extern uint32 g_tileSize;
 extern pRenderer_t g_pRenderer;
 extern pMixer_t g_pMixer;
 extern uint32 g_scale;
-extern uint32 g_currColor;
+extern uint32 g_overworldTilemapColor;
 
 /* Cached width of the last seen atlas texture */
 static uint32 i_cachedAtlasWidth;
@@ -143,7 +143,7 @@ void Sprite::tryMove(const Direction dir)
                 {
                     if (pLevelRef->getTileBelow(m_impl->m_pCurrTile) == pNextTile)
                     {
-                        g_pMixer->playAudio("sfx/ledge.wav");
+                        g_pMixer->playAudio("sfx/ledge.wav", true);
                         m_impl->m_currState = S_JUMPING;
                         m_impl->m_jumpDelayVel = true;
                         m_impl->m_jumpCounter = 0;
@@ -151,6 +151,10 @@ void Sprite::tryMove(const Direction dir)
                         // "Reserve" the target tile as occupied to avoid
                         // two sprites moving to the same tile
                         pNextTile->setOccupied(true);
+                    }
+                    else
+                    {
+                        g_pMixer->playAudio("sfx/bump.wav");
                     }
                 }
                 // Second Ledge Case
@@ -423,10 +427,10 @@ void Sprite::switchPaletteTo(const uint32 color)
     {
         auto& arrayFrames = m_impl->m_anims[(Direction)indexDir];
 
-        arrayFrames[0]->swapColor(g_currColor, color);
-        arrayFrames[1]->swapColor(g_currColor, color);
-        arrayFrames[2]->swapColor(g_currColor, color);
-        arrayFrames[3]->swapColor(g_currColor, color);
+        arrayFrames[0]->swapColor(g_overworldTilemapColor, color);
+        arrayFrames[1]->swapColor(g_overworldTilemapColor, color);
+        arrayFrames[2]->swapColor(g_overworldTilemapColor, color);
+        arrayFrames[3]->swapColor(g_overworldTilemapColor, color);
     }
     
 }

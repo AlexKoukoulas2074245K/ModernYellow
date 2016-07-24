@@ -11,7 +11,7 @@
 #include "../resources/sresmanager.h"
 
 extern uint32 g_tileSize;
-extern uint32 g_currColor;
+extern uint32 g_overworldTilemapColor;
 extern pRenderer_t g_pRenderer;
 
 /* ==============
@@ -90,7 +90,7 @@ void Tile::switchPaletteTo(const uint32 color)
 {
     for (const auto& frame : m_frames)
     {
-        frame->swapColor(g_currColor, color);        
+        frame->swapColor(g_overworldTilemapColor, color);        
     }
 }
 
@@ -134,7 +134,7 @@ uint32 Tile::getCol() const
 
 bool Tile::isWalkable() const
 {
-    return !m_occupied && m_tileType != TT_SOLID;
+    return !m_occupied && m_tileType != TT_SOLID && m_tileType != TT_SEA;
 }
 
 bool Tile::isOccupied() const

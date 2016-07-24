@@ -18,7 +18,12 @@ public:
 
     ~Mixer();
 
-    void playAudio(const std::string& audioName, const bool overrideCurrent = false);
+    void tick();
+
+    void playAudio(
+        const std::string& audioName,
+        const bool overrideCurrent = false,
+        const bool silenceRest = false);
 
     const std::string& getCurrMusicName() const;
 
@@ -34,5 +39,7 @@ private:
 
     std::shared_ptr<AudioResource> m_activeMusic;
     std::shared_ptr<AudioResource> m_activeEffect;
+    bool m_effectPlaying;
+    bool m_silenceRest;
 
 };

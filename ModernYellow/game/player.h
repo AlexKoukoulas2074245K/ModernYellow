@@ -12,6 +12,8 @@ class Level;
 class TextureResource;
 class AudioResource;
 class UIComponent;
+class Npc;
+class OWObject;
 class Player final
 {    
 public:
@@ -57,7 +59,9 @@ private:
     std::shared_ptr<Level> m_pLevelRef;
     std::unique_ptr<Sprite> m_pSprite;
     std::unique_ptr<UIComponent> m_pTextbox;    
-    std::unique_ptr<WarpInfo> m_warpInfo;    
+    std::unique_ptr<WarpInfo> m_warpInfo;
+    std::shared_ptr<Npc> m_lastNpcInteractedWith;
+    std::shared_ptr<OWObject> m_lastOWObjectInteractedWith;
     bool m_firstTileAfterWarp;
     bool m_standingAtDoor;
     bool m_switchingAmbient;
