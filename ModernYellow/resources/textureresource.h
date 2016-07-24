@@ -27,7 +27,7 @@ public:
     using pTexture_t = std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>;
     using pSurface_t = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>;
 
-    bool load();
+    bool load() override;
     
     /* After manual pixel manipulation on the surface, the texture needs to
        be recompiled to display the changes */

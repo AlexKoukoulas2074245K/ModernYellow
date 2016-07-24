@@ -12,12 +12,15 @@
 #include "uicomps/uitextbox.h"
 #include "../resources/sresmanager.h"
 #include "../resources/textureresource.h"
+#include "../resources/audioresource.h"
 #include "../sinputhandler.h"
 #include "../font.h"
+#include "../mixer.h"
 
 #include <SDL_log.h>
 
 extern pFont_t g_pFont;
+extern pMixer_t g_pMixer;
 
 /* ==================
    Struct Definitions
@@ -61,7 +64,8 @@ Player::Player(
 
     m_pLevelRef(pLevelRef),
     m_warpInfo(nullptr),
-    m_standingAtDoor(false)
+    m_standingAtDoor(false),
+    m_switchingAmbient(false)
 {
     m_pSprite = std::make_unique<Sprite>(
         PLAYER_TEX_U,
@@ -71,6 +75,9 @@ Player::Player(
         m_pLevelRef,
         pAtlas,
         true);
+
+    // Play respective level music
+    g_pMixer->playAudio(m_pLevelRef->getLevelAmbientName());
 }
 
 Player::~Player(){}
@@ -90,6 +97,20 @@ void Player::update()
         return;
     }
     
+    if (m_switchingAmbient)
+    {        
+        // Fade out to next level's ambient music
+        auto currVol = g_pMixer->getMusicVolume() - 2; 
+        g_pMixer->setMusicVolume(currVol);
+        
+        if (currVol <= 0)
+        {
+            g_pMixer->setMusicVolume(Mixer::MAX_VOLUME);
+            g_pMixer->playAudio(m_pLevelRef->getLevelAmbientName());
+            m_switchingAmbient = false;
+        }        
+    }
+
     // The player is in the middle of a warp to 
     // another location, and is gradually performing
     // the move along with the level
@@ -135,6 +156,12 @@ void Player::update()
             m_warpInfo = nullptr;
             m_standingAtDoor = false;
             m_pLevelRef->resetWarping();
+
+            if (m_pLevelRef->getLevelAmbientName() != g_pMixer->getCurrMusicName())
+            {
+                SDL_Log(("Switching to: " + m_pLevelRef->getLevelAmbientName()).c_str());
+                m_switchingAmbient = true;                
+            }            
         }
         
         return;
@@ -223,6 +250,7 @@ void Player::update()
             {
                 auto pWarp = m_pSprite->getCurrTile()->getWarp();
                 m_warpInfo = std::make_unique<WarpInfo>(pWarp, m_pSprite->getDir(), pWarp->routeConnection);                
+                g_pMixer->playAudio("sfx/exithouse.wav");
                 m_pLevelRef->startWarpTo(pWarp);
             }
             else
@@ -248,7 +276,9 @@ void Player::update()
             m_pSprite->tryChangeDirection(DIR_DOWN);
             auto pWarp = m_pSprite->getCurrTile()->getWarp();
             m_warpInfo = std::make_unique<WarpInfo>(pWarp, m_pSprite->getDir(), pWarp->routeConnection);
-            m_pLevelRef->startWarpTo(pWarp);
+            g_pMixer->playAudio("sfx/exithouse.wav");
+            m_pLevelRef->startWarpTo(pWarp);                        
+            
         }
         else
         {
@@ -295,7 +325,16 @@ void Player::update()
             !m_standingAtDoor)
         {                           
             m_warpInfo = std::make_unique<WarpInfo>(pWarp, m_pSprite->getDir(), pWarp->routeConnection);
+            const auto& levelName = m_pLevelRef->getLevelName();                        
+
+            // Play exit house/enter house sfx before warping to next level
+            if (levelName[0] == 'i' && pWarp->location[0] == 'i')
+                g_pMixer->playAudio("sfx/exithouse.wav");
+            else if (levelName[0] == 'o' && pWarp->location[0] == 'i')
+                g_pMixer->playAudio("sfx/enterhouse.wav");
+
             m_pLevelRef->startWarpTo(pWarp);
+
         }        
     }          
 }

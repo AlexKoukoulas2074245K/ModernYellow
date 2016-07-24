@@ -10,6 +10,8 @@
 
 struct SDL_Renderer;
 class Font;
+class GameInfo;
+class Mixer;
 
 using int8  = int8_t;
 using int16 = int16_t;
@@ -23,6 +25,8 @@ using uint64 = uint64_t;
 
 using pRenderer_t = std::shared_ptr<SDL_Renderer>;
 using pFont_t     = std::shared_ptr<Font>;
+using pGameInfo_t = std::shared_ptr<GameInfo>;
+using pMixer_t    = std::shared_ptr<Mixer>;
 
 const uint32 BITS_PER_PIXEL = 32U;
 const uint32 DEFAULT_TILE_SIZE = 16U;

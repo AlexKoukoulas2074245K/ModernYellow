@@ -65,6 +65,10 @@ public:
 
     int getWarpLevel() const;
 
+    const string& getLevelName() const;
+
+    const string& getLevelAmbientName() const;
+
     // Needs to be called after Level construction, as there is use
     // of shared_from_this and during construction no shared_ptr is 
     // pointing to this instance
@@ -116,7 +120,8 @@ private:
     bool m_ready;    
     bool m_outdoors;
     string m_name;
-    
+    string m_ambientName;
+
     tilemap_t m_tilemap;    
     anitilemap_t m_seaTiles;
     anitilemap_t m_flowerTiles;

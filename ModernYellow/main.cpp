@@ -12,15 +12,19 @@
 #include "gstates/gsplay.h"
 #include "mydef.h"
 #include "sinputhandler.h"
-#include "resources/dataresource.h"
 #include "resources/sresmanager.h"
+#include "resources/dataresource.h"
+#include "mixer.h"
 #include "strutils.h"
 #include "font.h"
+#include "gameinfo.h"
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
+#include <fstream>
 #include <queue>
-
+#include <iostream>
 
 using std::string;
 
@@ -36,6 +40,7 @@ string g_savePath   = "";
 string g_assetPath  = "../assets/";
 string g_datPath    = g_assetPath + "dat/";
 string g_texPath    = g_assetPath + "tex/";
+string g_audioPath  = g_assetPath + "audio/";
 
 // Global game related variables
 uint32 g_fullscreen = 0;
@@ -50,11 +55,11 @@ uint32 g_currColor  = envcolors::EC_PALET;
 string g_playerName = "Ash";
 string g_rivalName  = "Garry";
 
-// Global Renderer
+// Global Systems
 pRenderer_t g_pRenderer;
-
-// Global Font
 pFont_t g_pFont;
+pGameInfo_t g_pGameInfo;
+pMixer_t g_pMixer;
 
 /* ============================
    Internal Function Signatures
@@ -66,7 +71,7 @@ static void adjustGameVars();
    Main Entry Point
    ================ */
 int main(int argc, char** argv)
-{       
+{               
     using std::unique_ptr;
     using std::queue;
     using std::make_unique;
@@ -75,8 +80,15 @@ int main(int argc, char** argv)
     adjustGameVars();
 
     // Initialize SDL components that are to be used by the app
-    if(SDLR(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO))) 
+    if (SDLR(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO))) 
     {
+        return -1;
+    } 
+    
+    // Initialize SDL mixer
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096) == -1)
+    {
+        SDL_FORCE_DISPLAY_ERROR("SDL mixer could not be correctly initialized");       
         return -1;
     }
     
@@ -90,6 +102,7 @@ int main(int argc, char** argv)
         g_fullscreen ? SDL_WINDOW_FULLSCREEN : 0),
         SDL_DestroyWindow);
 
+    
     // Create the renderer based on the generated window above
     g_pRenderer.reset(SDL_CreateRenderer(
         pWindow.get(), 
@@ -105,6 +118,9 @@ int main(int argc, char** argv)
         return -1;
     }
 
+    // Initialize Global Mixer System
+    g_pMixer = std::make_shared<Mixer>();
+
     // Initialize Font
     g_pFont = std::make_shared<Font>();
 
@@ -116,6 +132,14 @@ int main(int argc, char** argv)
     queue<unique_ptr<GState>> gstates;
     gstates.push(make_unique<GSPlay>());
     
+    // Create and load Game Info
+    g_pGameInfo = std::make_shared<GameInfo>();
+    if (!g_pGameInfo->isReady())
+    {
+        SDL_FORCE_DISPLAY_ERROR("GameInfo coult not be correctly initialized");
+        return -1;
+    }    
+
     // Game Loop vars
     auto running = true;            
     uint32 fps = 0;
@@ -151,7 +175,7 @@ int main(int argc, char** argv)
         SDL_RenderClear(g_pRenderer.get());
         gstates.front()->render();        
         SDL_RenderPresent(g_pRenderer.get());
-
+        
         // Input frame end
         ihandler.frameEnd();
 
@@ -174,7 +198,8 @@ int main(int argc, char** argv)
         }       
     }
     
-    // Cleanup           
+    // Cleanup   
+    Mix_CloseAudio();
     SDL_Quit();
 
     return 0;
@@ -208,7 +233,8 @@ static void extractConfigVars()
 
 static void adjustGameVars()
 {
-    if (g_fullscreen) g_scale = 4;
+    if (g_scale > 8) g_scale = 8;
+    if (g_fullscreen) g_scale = 8;
     g_width  *= g_scale;
     g_height *= g_scale;
     g_tileSize *= g_scale;

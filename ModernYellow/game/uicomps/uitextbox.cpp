@@ -8,11 +8,13 @@
 #include "../../sinputhandler.h"
 #include "../../strutils.h"
 #include "../../font.h"
+#include "../../mixer.h"
 
 #include <SDL_log.h>
 
 extern uint32 g_scale;
 extern pFont_t g_pFont;
+extern pMixer_t g_pMixer;
 extern string g_playerName;
 extern string g_rivalName;
 
@@ -76,7 +78,7 @@ void UITextbox::update()
         ihandler.isKeyTapped(K_A) ||         
         ihandler.isKeyTapped(K_B))
         && m_promptNext)
-    {        
+    {                
         m_arrowPrompt = false;
         m_arrowttl = 0;
         m_promptNext = false;
@@ -87,6 +89,9 @@ void UITextbox::update()
         }
         else
         {   
+            // Play sfx
+            g_pMixer->playAudio("sfx/click.wav", true);
+
             if (m_firstSentence)
             {
                 m_topSentence.clear();
@@ -104,7 +109,7 @@ void UITextbox::update()
         }
     }
     else if (m_promptNext && !m_lastSentence)
-    {        
+    {                
         if (--m_arrowttl <= 0)
         {
             m_arrowPrompt = !m_arrowPrompt;

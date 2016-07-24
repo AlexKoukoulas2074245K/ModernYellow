@@ -282,6 +282,16 @@ int32 Level::getWarpLevel() const
     return m_warpLevel;
 }
 
+const string& Level::getLevelName() const 
+{
+    return m_name;
+}
+
+const string& Level::getLevelAmbientName() const
+{
+    return m_ambientName;
+}
+
 bool Level::loadNPCData()
 {
     m_npcs.clear();
@@ -495,6 +505,9 @@ bool Level::readLevelData()
     // Skip headers
     uint32 dataIndex = 2;
     
+    // Get Ambient music name
+    m_ambientName = levelData[dataIndex++];
+
     // Get rows and cols
     auto comps = string_utils::split(levelData[dataIndex++], ',');
     if (comps.size() < 2) CORRUPTED_LEVEL();

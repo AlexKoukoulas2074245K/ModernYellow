@@ -15,7 +15,7 @@ class DataResource: public Resource
     friend class SResManager;
 public:    
 
-    bool load();
+    bool load() override;
 
     const std::vector<string>& getContent() const;
    

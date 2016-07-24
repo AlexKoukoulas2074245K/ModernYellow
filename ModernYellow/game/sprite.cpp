@@ -10,6 +10,7 @@
 #include "../portcommon.h"
 #include "../resources/textureresource.h"
 #include "../resources/sresmanager.h"
+#include "../mixer.h"
 
 #include <array>
 #include <unordered_map>
@@ -20,6 +21,7 @@
 
 extern uint32 g_tileSize;
 extern pRenderer_t g_pRenderer;
+extern pMixer_t g_pMixer;
 extern uint32 g_scale;
 extern uint32 g_currColor;
 
@@ -141,6 +143,7 @@ void Sprite::tryMove(const Direction dir)
                 {
                     if (pLevelRef->getTileBelow(m_impl->m_pCurrTile) == pNextTile)
                     {
+                        g_pMixer->playAudio("sfx/ledge.wav");
                         m_impl->m_currState = S_JUMPING;
                         m_impl->m_jumpDelayVel = true;
                         m_impl->m_jumpCounter = 0;
@@ -167,6 +170,10 @@ void Sprite::tryMove(const Direction dir)
                 }                
 
 #if !defined(SPRITE_NO_COL)
+            }
+            else
+            {
+                g_pMixer->playAudio("sfx/bump.wav");
             }
 #endif
 
@@ -306,7 +313,7 @@ void Sprite::render()
     {
         SDL_Rect jumpRendRect;
         jumpRendRect.x = m_impl->m_worldPos.x + m_impl->m_xRendOffset;
-        jumpRendRect.y = m_impl->m_worldPos.y + m_impl->m_yRendOffset + 2 * DEFAULT_TILE_SIZE;
+        jumpRendRect.y = m_impl->m_worldPos.y + m_impl->m_yRendOffset + g_tileSize/2;
         jumpRendRect.w = m_impl->m_jumpingTex->getSurface()->w * g_scale;
         jumpRendRect.h = m_impl->m_jumpingTex->getSurface()->h * g_scale;
 

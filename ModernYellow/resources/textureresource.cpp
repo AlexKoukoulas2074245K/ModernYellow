@@ -5,6 +5,7 @@
 
 #include "textureresource.h"
 #include "../portcommon.h"
+
 #include <SDL_image.h>
 
 extern string g_texPath;

@@ -19,7 +19,7 @@ public:
 
     virtual bool load() = 0;
 
-    virtual string getName() const;
+    virtual const string& getName() const;
 
 protected:
 

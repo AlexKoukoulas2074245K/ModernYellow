@@ -87,7 +87,10 @@
     <ClCompile Include="game\uicomps\uitextbox.cpp" />
     <ClCompile Include="gstates\gsplay.cpp" />
     <ClCompile Include="gstates\gstate.cpp" />
+    <ClCompile Include="gameinfo.cpp" />
+    <ClCompile Include="jsonutil\jsoncpp.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="mixer.cpp" />
     <ClCompile Include="resources\audioresource.cpp" />
     <ClCompile Include="resources\dataresource.cpp" />
     <ClCompile Include="resources\resource.cpp" />
@@ -107,6 +110,10 @@
     <ClInclude Include="game\uicomps\uiboolean.h" />
     <ClInclude Include="game\uicomps\uicomponent.h" />
     <ClInclude Include="game\uicomps\uitextbox.h" />
+    <ClInclude Include="gameinfo.h" />
+    <ClInclude Include="jsonutil\json-forwards.h" />
+    <ClInclude Include="jsonutil\json.h" />
+    <ClInclude Include="mixer.h" />
     <ClInclude Include="strutils.h" />
     <ClInclude Include="gstates\gsplay.h" />
     <ClInclude Include="gstates\gstate.h" />

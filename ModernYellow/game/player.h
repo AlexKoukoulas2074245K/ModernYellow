@@ -10,6 +10,7 @@ class Sprite;
 class Tile;
 class Level;
 class TextureResource;
+class AudioResource;
 class UIComponent;
 class Player final
 {    
@@ -56,8 +57,9 @@ private:
     std::shared_ptr<Level> m_pLevelRef;
     std::unique_ptr<Sprite> m_pSprite;
     std::unique_ptr<UIComponent> m_pTextbox;    
-    std::unique_ptr<WarpInfo> m_warpInfo;
+    std::unique_ptr<WarpInfo> m_warpInfo;    
     bool m_firstTileAfterWarp;
     bool m_standingAtDoor;
+    bool m_switchingAmbient;
 
 };

@@ -15,7 +15,7 @@ Resource::Resource(const string& resourceName):
 
 Resource::~Resource(){}
 
-string Resource::getName() const
+const string& Resource::getName() const
 {
     return m_name;
 }
