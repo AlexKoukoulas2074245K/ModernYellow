@@ -6,7 +6,9 @@
 #pragma once
 
 #include "mydef.h"
+#include <string>
 
+namespace Json { class Value; }
 class GameInfo
 {
 public:
@@ -17,6 +19,8 @@ public:
 
     bool isReady() const;
 
+    const Json::Value& getPokemonInfo(const std::string& name);
+    
 private:
 
     bool readJsonData();

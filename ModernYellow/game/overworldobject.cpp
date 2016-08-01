@@ -7,8 +7,6 @@
 #include "tile.h"
 #include "../resources/textureresource.h"
 
-#include <SDL_render.h>
-
 extern uint32 g_scale;
 extern uint32 g_tileSize;
 extern uint32 g_overworldTilemapColor;
@@ -55,14 +53,14 @@ void OWObject::update()
 void OWObject::render()
 {
     if (m_pTex)
-    {
-        SDL_Rect rendArea;
-        rendArea.x = m_pTile->getX() + m_xOffset;
-        rendArea.y = m_pTile->getY() + m_yOffset;
-        rendArea.w = g_tileSize;
-        rendArea.h = g_tileSize;
-
-        SDL_RenderCopy(g_pRenderer.get(), m_pTex->getTexture().get(), nullptr, &rendArea);
+    {        
+        SDLRender(
+            g_pRenderer,
+            m_pTex->getTexture().get(),
+            m_pTile->getX() + m_xOffset,
+            m_pTile->getY() + m_yOffset,
+            g_tileSize,
+            g_tileSize);        
     }    
 }
 

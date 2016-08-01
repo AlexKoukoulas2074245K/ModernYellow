@@ -64,6 +64,8 @@ public:
 
     void darken();
 
+    void wildPokemonAnimation(const uint32 step);
+
 private:
 
     void addFlowerTile1();

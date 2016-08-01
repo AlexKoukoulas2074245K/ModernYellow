@@ -18,6 +18,8 @@
 #include "strutils.h"
 #include "font.h"
 #include "gameinfo.h"
+#include "game/encounteranimationcontroller.h"
+#include "game/pokemon.h"
 
 #include <SDL.h>
 #include <SDL_image.h>
@@ -129,18 +131,18 @@ int main(int argc, char** argv)
     g_savePath = SDL_GetPrefPath(gc_orgName.c_str(), gc_appTitle.c_str());
     g_execPath = SDL_GetBasePath();   
 
-    // Create game states
-    queue<unique_ptr<GState>> gstates;
-    gstates.push(make_unique<GSPlay>());
-    
     // Create and load Game Info
     g_pGameInfo = std::make_shared<GameInfo>();
     if (!g_pGameInfo->isReady())
     {
         SDL_FORCE_DISPLAY_ERROR("GameInfo coult not be correctly initialized");
         return -1;
-    }    
+    }
 
+    // Create game states
+    queue<unique_ptr<GState>> gstates;
+    gstates.push(make_unique<GSPlay>());
+        
     // Game Loop vars
     auto running = true;            
     uint32 fps = 0;
@@ -177,7 +179,7 @@ int main(int argc, char** argv)
                                ALPHA(envcolors::EC_BLACK));
 
         SDL_RenderClear(g_pRenderer.get());
-        gstates.front()->render();        
+        gstates.front()->render();          
         SDL_RenderPresent(g_pRenderer.get());
         
         // Input frame end

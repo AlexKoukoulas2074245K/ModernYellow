@@ -26,7 +26,9 @@ UITextbox::UITextbox(const string& text):
     m_firstSentence(true),
     m_lastSentence(false),
     m_promptNext(false),
-    m_arrowPrompt(false),    
+    m_arrowPrompt(false),  
+    m_forcedArrow(false),
+    m_forceFinish(false),
     m_arrowttl(0),
     m_showCharDelay(UITB_CHAR_DELAY),
     m_waitingForSfx(false),
@@ -103,11 +105,16 @@ void UITextbox::update()
         ihandler.isKeyTapped(K_B))
         && m_promptNext)
     {          
-        m_arrowPrompt = false;
+        m_arrowPrompt = false;        
         m_arrowttl = 0;
         m_promptNext = false;
         if (m_lastSentence)
         {
+            if (m_forcedArrow)
+            {
+                m_forcedArrow = false;
+                g_pMixer->playAudio("sfx/click.wav", true);
+            }
             m_finished = true;
             m_active = false;
         }
@@ -132,7 +139,7 @@ void UITextbox::update()
             feedSentence();            
         }
     }
-    else if (m_promptNext && !m_lastSentence)
+    else if (m_promptNext && (!m_lastSentence || m_forcedArrow))
     {                
         if (--m_arrowttl <= 0)
         {
@@ -181,12 +188,24 @@ void UITextbox::update()
                 }
                 else
                 {
-                    m_rendBotSentence += m_botSentence[m_rendBotSentence.size()];
+                    if (m_botSentence[m_rendBotSentence.size()] == UITB_FORCE_ARROW) 
+                    {
+                        m_forcedArrow = true;
+                        m_promptNext = true;
+                    }                        
+                    else                    
+                        m_rendBotSentence += m_botSentence[m_rendBotSentence.size()];
                 }                
             }
             else
-            {
-                m_promptNext = true;
+            {      
+                if (m_forceFinish)
+                {
+                    m_finished = true;
+                    m_active = false;
+                }
+                else
+                    m_promptNext = true;
             }
         }
     }    
@@ -228,6 +247,8 @@ void UITextbox::parseText(const string& text)
 
 void UITextbox::parseDialogue(const string& text, dialogue_t& outDialogue)
 {
+    if (text.find(UITB_FORCE_FINISH) != text.npos) m_forceFinish = true;
+    
     auto vecParagraphs = string_utils::split(text, UITB_PARAGRAPH_DELIM);
 
     for (const auto& paragraph: vecParagraphs)
@@ -240,6 +261,10 @@ void UITextbox::parseDialogue(const string& text, dialogue_t& outDialogue)
         {
             string_utils::replace(sentence, "PLAYERNAME", g_playerName);
             string_utils::replace(sentence, "RIVALNAME", g_rivalName);
+            
+            const auto forceFinishPos = sentence.find(UITB_FORCE_FINISH);
+            if (forceFinishPos != sentence.npos) sentence.erase(forceFinishPos);
+
             outDialogue.back().push_back(sentence);
         }
     }    

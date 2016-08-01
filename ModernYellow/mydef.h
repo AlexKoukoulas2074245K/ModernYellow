@@ -7,11 +7,14 @@
 
 #include <cstdint>
 #include <memory>
+#include <SDL_render.h>
 
 struct SDL_Renderer;
 class Font;
 class GameInfo;
 class Mixer;
+class EncounterAnimationController;
+class TextureResource;
 
 using int8  = int8_t;
 using int16 = int16_t;
@@ -33,6 +36,24 @@ const uint32 DEFAULT_TILE_SIZE = 16U;
 
 const uint32 GAME_COLS = 10U;
 const uint32 GAME_ROWS = 9U;
+
+const int32 TRAINER_PORTRAIT_WIDTH = 56;
+const int32 TRAINER_PORTRAIT_HEIGHT = 56;
+const int32 PLAYER_PORTRAIT_TU = 6 * TRAINER_PORTRAIT_WIDTH;
+const int32 PLAYER_PORTRAIT_TV = 4 * TRAINER_PORTRAIT_HEIGHT;
+const int32 DEFAULT_TEXTBOX_HEIGHT = 48;
+
+inline void SDLRender(
+    pRenderer_t renderer,
+    SDL_Texture* tex, 
+    const int32 x,
+    const int32 y, 
+    const int32 width, 
+    const int32 height)
+{
+    SDL_Rect rendRect = {x, y, width, height};    
+    SDL_RenderCopy(renderer.get(), tex, nullptr, &rendRect);
+}
 
 #define RED(col)   ((col >> 0)  & 0xFF)
 #define GREEN(col) ((col >> 8)  & 0xFF) 
@@ -57,4 +78,9 @@ namespace envcolors
 enum Direction
 {
     DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT
+};
+
+enum BattleType
+{
+    BT_TRAINER, BT_ENCOUNTER
 };

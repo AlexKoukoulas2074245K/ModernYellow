@@ -44,15 +44,13 @@ public:
 
     void darken(const SDL_Rect& rect);        
 
-    /* Constructs and returns a snapshot of the pixels in the original texture
-       before starting the wild pokemon encounter animation */
-    void getPixelSnapshot(const SDL_Rect& area, pixelSnapshot_t& output) const;
-
     /* Swaps pixels in the given area to produce the wild pokemon encounter animation 
        for the step given */
     void wildPokemonAnimation(
-        const pixelSnapshot_t& snapshot, 
-        const SDL_Rect& rect, 
+        const uint32 step);
+
+    void wildPokemonAnimation(    
+        const SDL_Rect& area, 
         const uint32 step);
 
     std::shared_ptr<TextureResource> getSubTexture(
@@ -62,6 +60,10 @@ public:
         const uint32 height) const;
 
     std::shared_ptr<TextureResource> getHorFlippedTexture() const;
+    
+    uint32 getScaledWidth() const;
+    
+    uint32 getScaledHeight() const;
 
     const pTexture_t& getTexture() const;
 
@@ -80,9 +82,14 @@ private:
         const uint32 x,
         const uint32 y);    
 
+    /* Constructs a snapshot of the pixels in the original texture
+    before starting the wild pokemon encounter animation */
+    void constructPixelSnapshot(const SDL_Rect& area);
+
 private:
     
     pTexture_t m_pTexture;
     pSurface_t m_pSurface;    
-    
+    std::vector<std::vector<const uint32>> m_pixelSnapshot;
+    std::unique_ptr<SDL_Rect> m_lastSnapshotArea;
 };

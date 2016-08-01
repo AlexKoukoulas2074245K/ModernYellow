@@ -14,7 +14,6 @@
 
 #include <array>
 #include <unordered_map>
-#include <SDL_render.h>
 #include <SDL_log.h>
 
 //#define SPRITE_NO_COL
@@ -310,22 +309,16 @@ void Sprite::updatePosition()
 }
 
 void Sprite::render()
-{
-    
-
+{    
     if (m_impl->m_currState == S_JUMPING)
-    {
-        SDL_Rect jumpRendRect;
-        jumpRendRect.x = m_impl->m_worldPos.x + m_impl->m_xRendOffset;
-        jumpRendRect.y = m_impl->m_worldPos.y + m_impl->m_yRendOffset + g_tileSize/2;
-        jumpRendRect.w = m_impl->m_jumpingTex->getSurface()->w * g_scale;
-        jumpRendRect.h = m_impl->m_jumpingTex->getSurface()->h * g_scale;
-
-        SDL_RenderCopy(
-            g_pRenderer.get(),
+    {        
+        SDLRender(
+            g_pRenderer,
             m_impl->m_jumpingTex->getTexture().get(),
-            nullptr,
-            &jumpRendRect);
+            m_impl->m_worldPos.x + m_impl->m_xRendOffset,
+            m_impl->m_worldPos.y + m_impl->m_yRendOffset + g_tileSize / 2,
+            m_impl->m_jumpingTex->getSurface()->w * g_scale,
+            m_impl->m_jumpingTex->getSurface()->h * g_scale);
     }
 
     SDL_Rect rendRect;
@@ -365,6 +358,11 @@ bool Sprite::ledgeFail() const
 bool Sprite::isFrozen() const
 {
     return m_impl->m_frozen;
+}
+
+bool Sprite::hasWalkingAnimation() const
+{
+    return m_impl->m_walkingAnimation;
 }
 
 const std::shared_ptr<Tile>& Sprite::getCurrTile() const

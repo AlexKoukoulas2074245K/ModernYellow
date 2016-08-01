@@ -9,8 +9,6 @@
 #include "resources/textureresource.h"
 #include "strutils.h"
 
-#include <SDL_render.h>
-
 extern pRenderer_t g_pRenderer;
 extern uint32 g_scale;
 
@@ -40,7 +38,7 @@ void Font::renderString(
     for (const auto& letter: text)
     {   
         if (m_glyphs.count(letter))
-        {
+        {            
             SDL_RenderCopy(
                 g_pRenderer.get(),
                 m_glyphs[letter]->getTexture().get(),

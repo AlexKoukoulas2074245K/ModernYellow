@@ -39,6 +39,11 @@ bool GameInfo::isReady() const
     return m_impl->m_ready;
 }
 
+const Json::Value& GameInfo::getPokemonInfo(const std::string& name)
+{
+    return m_impl->m_pkmnRoot[name];
+}
+
 /* ===============
    Private Methods
    =============== */
@@ -47,9 +52,9 @@ bool GameInfo::readJsonData()
     Json::Reader jsonPkmnReader;
     std::ifstream jsonPkmnFile(g_datPath + "base_stats.json");
 
-    //Json::Reader jsonItemReader;
-    //std::ifstream jsonItemFile(g_datPath + "items.json");
+    Json::Reader jsonItemReader;
+    std::ifstream jsonItemFile(g_datPath + "items.json");
 
-    return jsonPkmnReader.parse(jsonPkmnFile, m_impl->m_pkmnRoot); //&&
-           //jsonItemReader.parse(jsonItemFile, m_impl->m_itemRoot);    
+    return jsonPkmnReader.parse(jsonPkmnFile, m_impl->m_pkmnRoot) &&
+           jsonItemReader.parse(jsonItemFile, m_impl->m_itemRoot);    
 }

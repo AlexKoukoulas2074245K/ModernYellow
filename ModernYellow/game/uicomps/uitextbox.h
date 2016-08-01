@@ -57,6 +57,8 @@ private:
     static const uint8 UITB_SENTENCE_DELIM = '#';
     static const uint8 UITB_BOOLEAN_DELIM = ';';
     static const uint8 UITB_NO_DIALOGUE = '%';
+    static const uint8 UITB_FORCE_ARROW = '*';
+    static const uint8 UITB_FORCE_FINISH = '^';
     static const uint32 UITB_GOT_ITEM_DELAY = 100;
     static const uint32 UITB_QUEST_ITEM_DELAY = 130;
 
@@ -89,4 +91,6 @@ private:
     bool m_firstSentence;
     bool m_lastSentence;
     bool m_arrowPrompt;
+    bool m_forcedArrow;
+    bool m_forceFinish;
 };

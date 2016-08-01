@@ -9,7 +9,7 @@
 
 #include <unordered_map>
 #include <vector>
-
+#include <functional>
 using std::string;
 
 struct Warp
@@ -24,6 +24,7 @@ class Tile;
 class TextureResource;
 class Npc;
 class OWObject;
+class EncounterAnimationController;
 struct SDL_Rect;
 class Level: public std::enable_shared_from_this<Level>
 {    
@@ -42,6 +43,7 @@ public:
 
     static const uint32 LEVEL_WARP_LEVEL_DELAY = 8;
     static const uint32 LEVEL_WARP_LEVEL_MAX = 5;
+    static const uint32 LEVEL_TOTAL_WILD_MON_ANIMATION_STEPS = 12;
 
 public:
     explicit Level(
@@ -54,11 +56,11 @@ public:
 
     void render();
 
-    void renderEncOccTiles();    
+    void renderTopLayer();    
 
-    void initWildEncounterEffect();
-
-    void playWildEncounterEffect();
+    void startEncounter(
+        const BattleType& battleType, 
+        std::function<void()> onAnimationComplete);
 
     void establishNewColor();
 
@@ -126,8 +128,13 @@ private:
 
 private:
 
+    static const uint32 LEVEL_WILD_ENCOUNTER_FLASH_DELAY = 3;
+
+private:
+
     bool m_ready;    
     bool m_outdoors;
+    bool m_animationInProgress;
     string m_name;
     string m_ambientName;
 
@@ -140,10 +147,9 @@ private:
     owobjects_t m_owobjects;
 
     std::shared_ptr<TextureResource> m_pLevelTex;      
-    std::shared_ptr<TextureResource> m_pOverworldAtlas;
-
+    std::shared_ptr<TextureResource> m_pOverworldAtlas;    
     std::shared_ptr<Warp> m_pCurrDestination;
-    std::vector<std::vector<const uint32>> m_pixelSnapshot;
+    std::unique_ptr<EncounterAnimationController> m_pEncAniController;
 
     SDL_Rect m_visibleArea;
     SDL_Rect m_levelArea;
@@ -152,5 +158,9 @@ private:
     int32 m_xOffset, m_yOffset;
 
     int32 m_warpLevelDelay;
-    int m_warpLevel;
+    int32 m_warpLevel;
+
+    uint32 m_wildFlashEffectStep;
+    uint32 m_wildFlashEffectRepeatCounter;
+    uint32 m_wildFlashEffectDelay;
 };

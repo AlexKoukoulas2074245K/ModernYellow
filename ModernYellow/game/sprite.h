@@ -50,6 +50,8 @@ public:
 
     bool isFrozen() const;
 
+    bool hasWalkingAnimation() const;
+
     const std::shared_ptr<Tile>& getCurrTile() const;
 
     const std::shared_ptr<Tile>& getNextTile() const;

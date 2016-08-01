@@ -11,8 +11,10 @@
 #include "../game/player.h"
 #include "../game/npc.h"
 #include "../game/tile.h"
+#include "../game/pokemon.h"
 #include "../portcommon.h"
 #include "../mixer.h"
+#include "../game/battle/battlecontroller.h"
 
 #include <SDL_render.h>
 #include <SDL_log.h>
@@ -29,16 +31,21 @@ extern uint32 g_scale;
 
 int32 globXOffset = 0;
 int32 globYOffset = 0;
+BattleController::pokemonParty_t a, b;
 
 /* ==============
    Public Methods
    ============== */
 GSPlay::GSPlay():
     GState(),
-    m_uiActions(false)
-{            
-    auto pAtlas = castResToTex(resmanager.loadResource("tilemaps/overworldmap.png", RT_TEXTURE));
-    
+    m_uiActions(false),
+    m_encounterInProgress(false),
+    m_pBattleController(nullptr)
+{  
+    a.push_back(std::make_unique<Pokemon>("PIKACHU", 5));
+    b.push_back(std::make_unique<Pokemon>("PIDGEY", 4));
+
+    auto pAtlas = castResToTex(resmanager.loadResource("tilemaps/overworldmap.png", RT_TEXTURE));    
     auto start = SDL_GetTicks();
     m_pLevel = std::make_shared<Level>("oviridian", pAtlas);        
     m_pLevel->loadNPCData();
@@ -59,8 +66,18 @@ GSPlay::~GSPlay()
 
 void GSPlay::update()
 {   
+    if (m_pBattleController)
+    {
+        m_pBattleController->update();
+        return;
+    }
+
     m_pLevel->update();
-    m_pPlayer->update();
+
+    if (!m_encounterInProgress)
+    {
+        m_pPlayer->update();
+    }    
 
     if (m_pPlayer->hasUIDialog() != m_uiActions)
     {
@@ -73,30 +90,33 @@ void GSPlay::update()
 
     m_pLevel->setOffset(globXOffset, globYOffset);    
     m_pPlayer->setOffset(globXOffset, globYOffset); 
-
-    static bool isInit = false;
-    static int delay = 3;
+    
     if (ihandler.isKeyTapped(K_SELECT))
-    {        
-        SDL_Log("INIt");
-        m_pLevel->initWildEncounterEffect(); 
-        isInit = true;        
-        g_pMixer->playAudio("ambient/wildpokemon.mp3", false, false);
-    }
-    if (isInit && !--delay)
-    {
-        delay = 3;
-        m_pLevel->playWildEncounterEffect();
-    }
+    {                
+        m_encounterInProgress = true;
+        g_pMixer->playAudio("ambient/wildpokemon.mp3", false, false);                        
+        m_pLevel->startEncounter(BattleType::BT_ENCOUNTER, [this]()
+        {
+            
+            m_pBattleController = std::make_unique<BattleController>(a, b, BattleType::BT_ENCOUNTER);
+            SDL_Delay(1300);
+        });
+    }  
 }
 
 void GSPlay::render()
 {        
+    if (m_pBattleController)
+    {
+        m_pBattleController->render();
+        return;
+    }
+
     m_pLevel->render();           
     m_pPlayer->render();
 
     if (!m_uiActions)
     {
-        m_pLevel->renderEncOccTiles();
+        m_pLevel->renderTopLayer();
     }    
 }

@@ -8,6 +8,7 @@
 #include "tile.h"
 #include "npc.h"
 #include "overworldobject.h"
+#include "encounteranimationcontroller.h"
 #include "../resources/sresmanager.h"
 #include "../resources/dataresource.h"
 #include "../resources/textureresource.h"
@@ -15,7 +16,6 @@
 
 #include <SDL_timer.h>
 #include <SDL_log.h>
-#include <SDL_render.h>
 #include <SDL_assert.h>
 #include <set>
 
@@ -69,7 +69,12 @@ Level::Level(
     m_cols(0),
     m_xOffset(0),
     m_yOffset(0),
-    m_pCurrDestination(nullptr)
+    m_pCurrDestination(nullptr),
+    m_wildFlashEffectStep(1U),
+    m_wildFlashEffectRepeatCounter(0U),
+    m_wildFlashEffectDelay(LEVEL_WILD_ENCOUNTER_FLASH_DELAY),
+    m_pEncAniController(std::make_unique<EncounterAnimationController>()),
+    m_animationInProgress(false)
 {    
     m_outdoors = m_name[0] == 'o';
     m_currColor = s_locationColors[m_name];
@@ -90,7 +95,38 @@ Level::Level(
 Level::~Level() = default;
 
 void Level::update()
-{
+{    
+    if (m_animationInProgress)
+    {
+        if (!--m_wildFlashEffectDelay)
+        {
+            m_wildFlashEffectDelay = LEVEL_WILD_ENCOUNTER_FLASH_DELAY;
+
+            if (m_wildFlashEffectStep > LEVEL_TOTAL_WILD_MON_ANIMATION_STEPS)
+            {
+                m_wildFlashEffectStep = 1;
+                m_wildFlashEffectRepeatCounter++;
+            }
+
+            if (m_wildFlashEffectRepeatCounter > 2)
+            {
+                m_animationInProgress = false;
+            }
+
+            for (const auto& seaTile : m_seaTiles)       seaTile->wildPokemonAnimation(m_wildFlashEffectStep);
+            for (const auto& flowerTile : m_flowerTiles) flowerTile->wildPokemonAnimation(m_wildFlashEffectStep);
+            for (const auto& encTile : m_encounterTiles) encTile->wildPokemonAnimation(m_wildFlashEffectStep);
+
+            if (m_wildFlashEffectStep == 1) calculateVisibleArea(m_visibleArea);
+            m_pLevelTex->wildPokemonAnimation(m_visibleArea, m_wildFlashEffectStep++);
+        }
+    }
+    else if (m_pEncAniController->isPlayingAnimation())
+    {           
+        m_pEncAniController->update();
+        return;        
+    }
+
     if (m_warpLevel > 0 && 
         (--m_warpLevelDelay <= 0 || m_pCurrDestination->routeConnection))
     {
@@ -180,7 +216,7 @@ void Level::update()
     for (const auto& owobject: m_owobjects)
     {
         owobject->update();
-    }
+    }    
 }
 
 void Level::render()
@@ -230,10 +266,10 @@ void Level::render()
     for (const auto& npc : m_npcs)
     {
         npc->render();
-    }
+    }    
 }
 
-void Level::renderEncOccTiles()
+void Level::renderTopLayer()
 {
     for (const auto& encTile : m_encounterTiles)
     {
@@ -242,20 +278,29 @@ void Level::renderEncOccTiles()
             encTile->render(m_xOffset, m_yOffset);
         }
     }
+
+    if (m_pEncAniController->isPlayingAnimation() && 
+        !m_animationInProgress)
+    {
+        m_pEncAniController->render();
+    }    
 }
 
-void Level::initWildEncounterEffect()
-{        
-    calculateVisibleArea(m_visibleArea);
-    m_pLevelTex->getPixelSnapshot(m_visibleArea, m_pixelSnapshot);
-}
-
-void Level::playWildEncounterEffect()
-{
-    static int i = 1;
-    m_pLevelTex->wildPokemonAnimation(m_pixelSnapshot, m_visibleArea, i++);
-
-    if (i > 12) i = 1;
+void Level::startEncounter(
+    const BattleType& battleType,
+    std::function<void()> onAnimationComplete)
+{       
+    if (battleType == BattleType::BT_ENCOUNTER)
+    {
+        // detect animation type
+        m_animationInProgress = true;
+        m_wildFlashEffectDelay = LEVEL_WILD_ENCOUNTER_FLASH_DELAY;
+        m_pEncAniController->playEncounterAnimation(EncounterAnimationController::EAT_WILD_OUTDOORS, onAnimationComplete);
+    }
+    else
+    {
+        m_pEncAniController->playEncounterAnimation(EncounterAnimationController::EAT_TRAINER_OUTDOORS, onAnimationComplete);
+    }                  
 }
 
 void Level::establishNewColor()

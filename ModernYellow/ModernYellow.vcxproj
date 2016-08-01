@@ -76,10 +76,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="font.cpp" />
+    <ClCompile Include="game\battle\battlecontroller.cpp" />
+    <ClCompile Include="game\battle\battlefsm\fsmstatedarkintro.cpp" />
+    <ClCompile Include="game\battle\battlefsm\fsmstateintro.cpp" />
+    <ClCompile Include="game\encounteranimationcontroller.cpp" />
     <ClCompile Include="game\level.cpp" />
     <ClCompile Include="game\npc.cpp" />
     <ClCompile Include="game\overworldobject.cpp" />
     <ClCompile Include="game\player.cpp" />
+    <ClCompile Include="game\pokemon.cpp" />
     <ClCompile Include="game\sprite.cpp" />
     <ClCompile Include="game\tile.cpp" />
     <ClCompile Include="game\uicomps\uiboolean.cpp" />
@@ -101,10 +106,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="font.h" />
+    <ClInclude Include="game\battle\battlecontroller.h" />
+    <ClInclude Include="game\battle\battlefsm\fsmstate.h" />
+    <ClInclude Include="game\battle\battlefsm\fsmstatedarkintro.h" />
+    <ClInclude Include="game\battle\battlefsm\fsmstateintro.h" />
+    <ClInclude Include="game\encounteranimationcontroller.h" />
     <ClInclude Include="game\level.h" />
     <ClInclude Include="game\npc.h" />
     <ClInclude Include="game\overworldobject.h" />
     <ClInclude Include="game\player.h" />
+    <ClInclude Include="game\pokemon.h" />
+    <ClInclude Include="game\pokemonstatutil.h" />
     <ClInclude Include="game\sprite.h" />
     <ClInclude Include="game\tile.h" />
     <ClInclude Include="game\uicomps\uiboolean.h" />

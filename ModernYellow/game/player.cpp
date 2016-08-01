@@ -169,7 +169,7 @@ void Player::update()
     }
         
     // A button tap, need to test for a ui or chat action
-    if (ihandler.isKeyTapped(K_A))
+    if (ihandler.isKeyTapped(K_A) && !m_pSprite->hasWalkingAnimation())
     {        
         switch (m_pSprite->getDir())
         {

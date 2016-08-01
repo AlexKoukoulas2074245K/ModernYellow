@@ -5,7 +5,6 @@
 
 #include "tile.h"
 #include <SDL_log.h>
-#include <SDL_render.h>
 
 #include "../resources/textureresource.h"
 #include "../resources/sresmanager.h"
@@ -73,17 +72,13 @@ void Tile::render(const int32 xRendOffset, const int32 yRendOffset)
 {
     if (m_frames.size() <= 0) return;
 
-    SDL_Rect rendArea = {};
-    rendArea.x = getX() + xRendOffset + (m_seaCurrentOffset*2);
-    rendArea.y = getY() + yRendOffset;
-    rendArea.w = g_tileSize;
-    rendArea.h = g_tileSize;
-
-    SDL_RenderCopy(
-        g_pRenderer.get(),
+    SDLRender(
+        g_pRenderer, 
         m_frames[m_curFrame]->getTexture().get(),
-        nullptr, 
-        &rendArea);
+        getX() + xRendOffset + (m_seaCurrentOffset * 2),
+        getY() + yRendOffset,
+        g_tileSize,
+        g_tileSize);
 }
 
 void Tile::switchPaletteTo(const uint32 color)
@@ -99,6 +94,14 @@ void Tile::darken()
     for (const auto& frame: m_frames)
     {
         frame->darken();
+    }
+}
+
+void Tile::wildPokemonAnimation(const uint32 step)
+{
+    for (const auto& frame: m_frames)
+    {
+        frame->wildPokemonAnimation(step);
     }
 }
 
