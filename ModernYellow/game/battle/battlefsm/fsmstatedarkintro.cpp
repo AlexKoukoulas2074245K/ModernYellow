@@ -53,17 +53,21 @@ FSMStateDarkIntro::FSMStateDarkIntro(
             TRAINER_PORTRAIT_WIDTH, 
             TRAINER_PORTRAIT_HEIGHT);
 
-    m_playerTexturePosition = {
-        g_width, 
-        g_height - TRAINER_PORTRAIT_HEIGHT * g_scale - DEFAULT_TEXTBOX_HEIGHT * g_scale,
-        TRAINER_PORTRAIT_WIDTH * g_scale, 
-        TRAINER_PORTRAIT_HEIGHT * g_scale};
+    m_playerTexturePosition = 
+	{
+        static_cast<int32>(g_width), 
+        static_cast<int32>(g_height - TRAINER_PORTRAIT_HEIGHT * g_scale - DEFAULT_TEXTBOX_HEIGHT * g_scale),
+        static_cast<int32>(TRAINER_PORTRAIT_WIDTH * g_scale), 
+        static_cast<int32>(TRAINER_PORTRAIT_HEIGHT * g_scale)
+	};
 
-    m_opponentTexturePosition = {
-        -TRAINER_PORTRAIT_WIDTH * g_scale + 4 * g_scale, 
+    m_opponentTexturePosition = 
+	{
+        static_cast<int32>(-TRAINER_PORTRAIT_WIDTH * g_scale + 4 * g_scale), 
         0, 
-        TRAINER_PORTRAIT_WIDTH * g_scale, 
-        TRAINER_PORTRAIT_HEIGHT * g_scale};
+        static_cast<int32>(TRAINER_PORTRAIT_WIDTH * g_scale), 
+        static_cast<int32>(TRAINER_PORTRAIT_HEIGHT * g_scale)
+	};
 }
 
 void FSMStateDarkIntro::update()

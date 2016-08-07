@@ -90,6 +90,6 @@ private:
     
     pTexture_t m_pTexture;
     pSurface_t m_pSurface;    
-    std::vector<std::vector<const uint32>> m_pixelSnapshot;
+    std::vector<std::vector<uint32>> m_pixelSnapshot;
     std::unique_ptr<SDL_Rect> m_lastSnapshotArea;
 };

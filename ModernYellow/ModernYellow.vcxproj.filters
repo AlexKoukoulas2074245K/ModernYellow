@@ -99,6 +99,9 @@
     <ClCompile Include="game\battle\battlefsm\fsmstateintro.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="game\battle\battlefsm\fsmstate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mydef.h">

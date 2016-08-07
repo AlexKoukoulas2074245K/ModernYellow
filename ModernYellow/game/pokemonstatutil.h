@@ -11,24 +11,29 @@
 namespace stat_utils
 {
     int16 calculateStatOtherThanHP(
-        const uint8 level, 
+        const int8 level, 
         const int16 baseStat, 
         const uint8 iv,
         const uint16 ev)
     {
-        const int16 evFactor = (int16) (floor((int16) ((int16) (ceil((int16) (sqrt(ev)))) / 4)));
-        const int16 numFactor = (int16) ((baseStat + iv) * 2 + evFactor) * level;
-        return (int16) (floor((int16) (numFactor / 100))) + 5;
+        const int32 evFactor = (int32) (floor((int32) ((int32) (ceil((int32) (sqrt(ev)))) / 4)));
+        const int32 numFactor = (int32) ((baseStat + iv) * 2 + evFactor) * level;
+        return (int16)((int32)(floor((int16) (numFactor / 100))) + 5);
     }
 
     int16 calculateHPStat(
-        const uint8 level,
+        const int8 level,
         const int16 baseStat,
         const uint8 iv,
         const uint16 ev)
     {
-        const int16 evFactor = (int16)(floor((int16)((int16)(ceil((int16)(sqrt(ev))))/4)));
-        const int16 numFactor = (int16)((baseStat + iv) * 2 + evFactor) * level;
-        return (int16)(floor((int16)(numFactor / 100))) + level + 10;
+        const int32 evFactor = (int32)(floor((int32)((int32)(ceil((int32)(sqrt(ev))))/4)));
+        const int32 numFactor = (int32)((baseStat + iv) * 2 + evFactor) * level;
+        return (int16)((int32)(floor((int32)(numFactor / 100))) + level + 10);
+    }
+
+    float getPercentDepleted(const int16 currHp, const int16 maxHp)
+    {
+        return 1.0f - static_cast<float>(currHp) / static_cast<float>(maxHp);
     }
 }

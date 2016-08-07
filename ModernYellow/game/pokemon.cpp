@@ -15,10 +15,10 @@ extern pGameInfo_t g_pGameInfo;
 /* ==============
    Public Methods
    ============== */
-Pokemon::Pokemon(const std::string name, const uint8 level):
+Pokemon::Pokemon(const std::string name, const int8 level):
     m_name(std::move(name)),
     m_level(level),
-    m_status(STATUS_OK),
+    m_status(STATUS_OK),    
     m_infoRoot(g_pGameInfo->getPokemonInfo(m_name))      
 {    
     initIndividualValues();
@@ -26,6 +26,16 @@ Pokemon::Pokemon(const std::string name, const uint8 level):
     initBaseStats();    
     initMiscInfo();
     calculateCurrentStats();
+}
+
+void Pokemon::inflictDamage(const int32 damage) 
+{
+    m_currHp -= damage;
+
+    if (m_currHp < 0)           
+        m_currHp = 0;    
+    if (m_currHp > m_currStats[S_HP]) 
+        m_currHp = m_currStats[S_HP];    
 }
 
 const std::string& Pokemon::getName() const
@@ -43,9 +53,24 @@ Pokemon::Status Pokemon::getStatus() const
     return m_status;
 }
 
+int8 Pokemon::getLevel() const
+{
+    return m_level;
+}
+
+int16 Pokemon::getCurrHp() const
+{
+    return m_currHp;
+}
+
+int16 Pokemon::getStat(const Stat& stat) const
+{
+    return m_currStats[stat];
+}
+
 bool Pokemon::hasFainted() const
 {
-    return m_currStats[S_HP] == 0;
+    return m_currHp == 0;
 }
 
 /* ===============
@@ -114,4 +139,5 @@ void Pokemon::calculateCurrentStats()
     m_currStats[S_DEFENSE] = stat_utils::calculateStatOtherThanHP(m_level, m_baseStats[S_DEFENSE], m_individualValues[S_DEFENSE], m_effortValues[S_DEFENSE]);
     m_currStats[S_SPEED] = stat_utils::calculateStatOtherThanHP(m_level, m_baseStats[S_SPEED], m_individualValues[S_SPEED], m_effortValues[S_SPEED]);
     m_currStats[S_SPECIAL] = stat_utils::calculateStatOtherThanHP(m_level, m_baseStats[S_SPECIAL], m_individualValues[S_SPECIAL], m_effortValues[S_SPECIAL]);
+    m_currHp = m_currStats[S_HP];
 }

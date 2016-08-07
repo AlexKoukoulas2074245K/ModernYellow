@@ -18,7 +18,6 @@
 
 #include <SDL_render.h>
 #include <SDL_log.h>
-#include <SDL_gfxPrimitives.h>
 #include <SDL_timer.h>
 
 extern pRenderer_t g_pRenderer;
@@ -42,7 +41,7 @@ GSPlay::GSPlay():
     m_encounterInProgress(false),
     m_pBattleController(nullptr)
 {  
-    a.push_back(std::make_unique<Pokemon>("PIKACHU", 5));
+    a.push_back(std::make_unique<Pokemon>("CHANSEY", 100));
     b.push_back(std::make_unique<Pokemon>("PIDGEY", 4));
 
     auto pAtlas = castResToTex(resmanager.loadResource("tilemaps/overworldmap.png", RT_TEXTURE));    
