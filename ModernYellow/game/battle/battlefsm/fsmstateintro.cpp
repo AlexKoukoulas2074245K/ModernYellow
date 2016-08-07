@@ -11,6 +11,10 @@
 #include "../../../sinputhandler.h"
 
 #include <SDL_timer.h>
+<<<<<<< HEAD
+=======
+#include <SDL_gfxPrimitives.h>
+>>>>>>> b6165944af87bf15d8c3a5c87ebbd21a0a29ee50
 
 extern pMixer_t    g_pMixer;
 extern pRenderer_t g_pRenderer;
@@ -86,7 +90,7 @@ FSMStateIntro::FSMStateIntro(
 		static_cast<int32>(TRAINER_PORTRAIT_WIDTH * g_scale),
 		static_cast<int32>(TRAINER_PORTRAIT_HEIGHT * g_scale) 
 	};
-
+	
     // Load player pokemon bar
     m_playerPokemonBar = castResToTex(resmanager.loadResource("misctex/player_pokemon.png", RT_TEXTURE));
 
