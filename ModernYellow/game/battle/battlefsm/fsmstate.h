@@ -23,38 +23,79 @@ public:
         BattleController::uiComponentStack_t& uiComponents,
         const BattleController::pokemonParty_t& localPokemon,
         const BattleController::pokemonParty_t& enemyPokemon,
-        const bool isWildEncounter):
-        
-        m_normalTrainerAtlas(normalTrainerAtlas),
-        m_darkTrainerAtlas(darkTrainerAtlas),
-        m_opponentPokemonStatsTexture(castResToTex(resmanager.loadResource("misctex/enemy_stats.png", RT_TEXTURE))),
-        m_localPokemonStatsTexture(castResToTex(resmanager.loadResource("misctex/player_stats.png", RT_TEXTURE))),
-        m_activeComponents(uiComponents),
-        m_localPokemon(localPokemon),
-        m_enemyPokemon(enemyPokemon),
-        m_isWildEncounter(isWildEncounter),
-        m_finished(false){};
+        const bool isWildEncounter);
 
-    virtual ~FSMState() = 0 {};
+    virtual ~FSMState() = 0;
 
     virtual void update() = 0;
 
-    virtual void render() = 0;
+    virtual void render() = 0;    
 
     virtual std::unique_ptr<FSMState> getSuccessor() const = 0;
     
-    bool isFinished() const { return m_finished; };
+    bool isFinished() const;
 
 protected:
 
-    static const int32 OPPONENT_POKEMON_STATS_X = 8;
-    static const int32 OPPONENT_POKEMON_STATS_Y = 16;
-    static const int32 LOCAL_POKEMON_STATS_X = 72;
-    static const int32 LOCAL_POKEMON_STATS_Y = 72;
-    static const int32 LOCAL_ACTOR_X = 8;
-    static const int32 LOCAL_ACTOR_Y = 40;
-    static const int32 REMOTE_ACTOR_X = 104;
-    static const int32 REMOTE_ACTOR_Y = 0;
+    void renderLocalPokemonStats(const std::shared_ptr<TextureResource>& resource);
+    void renderLocalPokemonHpBar(const float percentDepleted);
+    void renderLocalActor(const std::shared_ptr<TextureResource>& resource);
+    void renderLocalPokemonName(const std::string& name);
+    void renderLocalPokemonLevel(const int8 level);
+    void renderLocalPokemonCurrentAndMaxHP(const int16 currHp, const int16 maxHp);
+    void renderAllLocalPlayerSceneObjects(
+        const std::shared_ptr<TextureResource>& pokemonStatsTexture,
+        const std::shared_ptr<TextureResource>& actorTexture,
+        const int8 pokemonLevel,
+        const int16 currHp,
+        const int16 maxHp,
+        const std::string& pokemonName);
+   
+    void renderOpponentPokemonStats(const std::shared_ptr<TextureResource>& resource);
+    void renderOpponentPokemonHpBar(const float percentDepleted);
+    void renderOpponentActor(const std::shared_ptr<TextureResource>& resource);
+    void renderOpponentPokemonName(const std::string& name);
+    void renderOpponentPokemonLevel(const int8 level);
+    void renderAllOpponentSceneObjects(
+        const std::shared_ptr<TextureResource>& pokemonStatsTexture,
+        const std::shared_ptr<TextureResource>& actorTexture,
+        const int8 pokemonLevel,
+        const int16 currHp,
+        const int16 maxHp,
+        const std::string& pokemonName);
+
+protected:
+
+    static const int32 DEFAULT_BLOCK_SIZE = 8;
+
+    static const int32 LOCAL_POKEMON_STATS_X   = 72;
+    static const int32 LOCAL_POKEMON_STATS_Y   = 64;
+    static const int32 LOCAL_POKEMON_NAME_X    = 96;
+    static const int32 LOCAL_POKEMON_NAME_Y    = 56;
+    static const int32 LOCAL_POKEMON_LEVEL_X   = 120;
+    static const int32 LOCAL_POKEMON_LEVEL_Y   = 64;
+    static const int32 LOCAL_ACTOR_X           = 8;
+    static const int32 LOCAL_ACTOR_Y           = 40;
+    static const int32 LOCAL_POKEMON_CURR_HP_X = 104;
+    static const int32 LOCAL_POKEMON_CURR_HP_Y = 80;
+    static const int32 LOCAL_POKEMON_MAX_HP_X  = 136;
+    static const int32 LOCAL_POKEMON_MAX_HP_Y  = 80;
+    static const int32 LOCAL_POKEMON_HP_BAR_X  = 96;
+    static const int32 LOCAL_POKEMON_HP_BAR_Y  = 75;
+
+    static const int32 OPPONENT_POKEMON_STATS_X  = 8;
+    static const int32 OPPONENT_POKEMON_STATS_Y  = 8;
+    static const int32 OPPONENT_POKEMON_NAME_X   = 8;
+    static const int32 OPPONENT_POKEMON_NAME_Y   = 0;
+    static const int32 OPPONENT_POKEMON_LEVEL_X  = 40;
+    static const int32 OPPONENT_POKEMON_LEVEL_Y  = 8;
+    static const int32 OPPONENT_ACTOR_X          = 104;
+    static const int32 OPPONENT_ACTOR_Y          = 0;
+    static const int32 OPPONENT_POKEMON_HP_BAR_X = 32;
+    static const int32 OPPONENT_POKEMON_HP_BAR_Y = 19;
+    
+    static const int32 POKEMON_BAR_WIDTH = 48;
+    static const int32 POKEMON_BAR_HEIGHT = 2;
 
 protected:
 

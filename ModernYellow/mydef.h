@@ -73,6 +73,9 @@ namespace envcolors
     const uint32 EC_LAVEN(0xFFF820C8);
     const uint32 EC_CINAB(0xFF4040F8);
     const uint32 EC_CAVES(0xFF0040B8);
+    const uint32 BC_GREEN(0xFF00F800);
+    const uint32 BC_ORANG(0xFF0090F8);
+    const uint32 BC_CRITI(0xFF0000F8);
 }
 
 enum Direction

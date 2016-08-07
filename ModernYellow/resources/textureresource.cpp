@@ -147,6 +147,7 @@ void TextureResource::wildPokemonAnimation(
                 for (int x = 0; x < area.w; ++x)
                 {
                     const auto currPixel = m_pixelSnapshot[y][x];
+                    if (currPixel == 0) continue;
 
                     if      (currPixel == envcolors::EC_WHITE) setPixelAt(g_currentLevelColor, x + area.x, y + area.y);
                     else if (currPixel == g_currentLevelColor) setPixelAt(envcolors::EC_CBLUE, x + area.x, y + area.y);
@@ -163,6 +164,7 @@ void TextureResource::wildPokemonAnimation(
                 for (int x = 0; x < area.w; ++x)
                 {
                     const auto currPixel = m_pixelSnapshot[y][x];
+                    if (currPixel == 0) continue;
 
                     if (currPixel == envcolors::EC_WHITE) setPixelAt(envcolors::EC_CBLUE, x + area.x, y + area.y);
                     else setPixelAt(envcolors::EC_BLACK, x + area.x, y + area.y);                    
@@ -175,7 +177,9 @@ void TextureResource::wildPokemonAnimation(
             for (int y = 0; y < area.h; ++y)
             {
                 for (int x = 0; x < area.w; ++x)
-                {                              
+                {
+                    if (m_pixelSnapshot[y][x] == 0) continue;
+
                     setPixelAt(envcolors::EC_BLACK, x + area.x, y + area.y);
                 }
             }
@@ -201,6 +205,7 @@ void TextureResource::wildPokemonAnimation(
                 for (int x = 0; x < area.w; ++x)
                 {
                     const auto currPixel = m_pixelSnapshot[y][x];
+                    if (currPixel == 0) continue;
 
                     if (currPixel == g_currentLevelColor) setPixelAt(envcolors::EC_WHITE, x + area.x, y + area.y);
                     else if (currPixel == envcolors::EC_CBLUE) setPixelAt(g_currentLevelColor, x + area.x, y + area.y);
@@ -217,6 +222,7 @@ void TextureResource::wildPokemonAnimation(
                 for (int x = 0; x < area.w; ++x)
                 {
                     const auto currPixel = m_pixelSnapshot[y][x];
+                    if (currPixel == 0) continue;
 
                     if (currPixel == envcolors::EC_BLACK) setPixelAt(envcolors::EC_CBLUE, x + area.x, y + area.y);
                     else setPixelAt(envcolors::EC_WHITE, x + area.x, y + area.y);
@@ -230,6 +236,8 @@ void TextureResource::wildPokemonAnimation(
             {
                 for (int x = 0; x < area.w; ++x)
                 {
+                    if (m_pixelSnapshot[y][x] == 0) continue;
+
                     setPixelAt(envcolors::EC_WHITE, x + area.x, y + area.y);
                 }
             }
@@ -432,12 +440,8 @@ void TextureResource::constructPixelSnapshot(const SDL_Rect& area)
     {
         m_pixelSnapshot.push_back(std::vector<const uint32>(area.w));
         for (auto x = 0; x < area.w; ++x)
-        {
-            const auto pixel = getPixelAt(x + area.x, y + area.y);
-            if (pixel == 0)
-                m_pixelSnapshot[y][x] = envcolors::EC_WHITE;
-            else
-                m_pixelSnapshot[y][x] = pixel;
+        {            
+            m_pixelSnapshot[y][x] = getPixelAt(x + area.x, y + area.y);
         }
     }
 

@@ -89,7 +89,7 @@ int main(int argc, char** argv)
     } 
     
     // Initialize SDL mixer
-    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096) == -1)
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 8192 * 2) == -1)
     {
         SDL_FORCE_DISPLAY_ERROR("SDL mixer could not be correctly initialized");       
         return -1;

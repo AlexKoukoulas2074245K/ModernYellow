@@ -77,6 +77,7 @@
   <ItemGroup>
     <ClCompile Include="font.cpp" />
     <ClCompile Include="game\battle\battlecontroller.cpp" />
+    <ClCompile Include="game\battle\battlefsm\fsmstate.cpp" />
     <ClCompile Include="game\battle\battlefsm\fsmstatedarkintro.cpp" />
     <ClCompile Include="game\battle\battlefsm\fsmstateintro.cpp" />
     <ClCompile Include="game\encounteranimationcontroller.cpp" />

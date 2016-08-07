@@ -11,7 +11,7 @@
 
 struct MoveLevelPair
 {    
-    uint8 level;
+    int8 level;
     std::string moveName;
 };
 
@@ -38,7 +38,9 @@ public:
         STATUS_PARALYZED
     };
 
-    Pokemon(const std::string name, const uint8 level);
+    Pokemon(const std::string name, const int8 level);
+
+    void inflictDamage(const int32 damage);
 
     const std::string& getName() const;
 
@@ -46,7 +48,13 @@ public:
 
     Status getStatus() const;
 
-    bool hasFainted() const;
+    int8 getLevel() const;
+
+    int16 getCurrHp() const;
+
+    int16 getStat(const Stat& stat) const;
+
+    bool hasFainted() const;    
 
 private:
 
@@ -61,7 +69,7 @@ private:
 
     std::string                m_name;
     std::string                m_id;
-    uint8                      m_level;
+    int8                       m_level;
     std::string                m_ovimageType;
     std::vector<std::string>   m_type;
     std::array<std::string, 2> m_evolution;
@@ -70,6 +78,7 @@ private:
     std::array<uint16, 5>      m_effortValues;
     std::array<int16, 5>       m_baseStats;    
     std::array<int16, 5>       m_currStats;
+    int16                      m_currHp;
     Status                     m_status;
 
     const Json::Value& m_infoRoot;
