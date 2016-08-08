@@ -144,7 +144,7 @@ int main(int argc, char** argv)
     g_pGameInfo = std::make_shared<GameInfo>();
     if (!g_pGameInfo->isReady())
     {
-        SDL_FORCE_DISPLAY_ERROR("GameInfo coult not be correctly initialized");
+        SDL_FORCE_DISPLAY_ERROR("GameInfo could not be correctly initialized");
         return -1;
     }
 

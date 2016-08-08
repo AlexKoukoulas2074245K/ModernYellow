@@ -102,6 +102,9 @@
     <ClCompile Include="game\battle\battlefsm\fsmstate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="game\battle\battlefsm\fsmstatemaininput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mydef.h">
@@ -198,6 +201,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="game\battle\battlefsm\fsmstateintro.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="game\battle\battlefsm\fsmstatemaininput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
