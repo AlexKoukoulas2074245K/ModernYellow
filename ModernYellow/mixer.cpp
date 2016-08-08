@@ -9,7 +9,7 @@
 
 #include <SDL_log.h>
 
-#define NO_AUDIO
+//#define NO_AUDIO
 
 /* ===============
    Class Constants

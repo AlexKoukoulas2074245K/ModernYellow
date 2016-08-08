@@ -88,13 +88,22 @@ int main(int argc, char** argv)
         return -1;
     } 
     
+
     // Initialize SDL mixer
-    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 8192 * 2) == -1)
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096) == -1)
     {
         SDL_FORCE_DISPLAY_ERROR("SDL mixer could not be correctly initialized");       
         return -1;
     }
     
+	const auto mixerFlags = MIX_INIT_MP3;
+	const auto mixerInitRes = Mix_Init(mixerFlags);
+	if ((mixerInitRes & mixerFlags) != mixerFlags)
+	{
+		SDL_FORCE_DISPLAY_ERROR("SDL Mixer could not initialize MP3 mixing");
+		return -1;
+	}
+
     // Create an SDL context window
     auto pWindow = std::unique_ptr<SDL_Window, void (*)(SDL_Window*)>(SDL_CreateWindow(
         gc_appTitle.c_str(), 
