@@ -33,6 +33,8 @@ public:
 
     void darken();
 
+	void wildPokemonAnimation(const uint32 step);
+
     void switchDialogue();
 
     const std::string& getDialogue() const;

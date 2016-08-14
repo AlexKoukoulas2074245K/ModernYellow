@@ -74,6 +74,11 @@ void OWObject::darken()
     m_pTex->darken();
 }
 
+void OWObject::wildPokemonAnimation(const uint32 step)
+{
+	m_pTex->wildPokemonAnimation(step);
+}
+
 void OWObject::switchDialogue()
 {
     m_dialogue = m_dialogueAfterInteraction;

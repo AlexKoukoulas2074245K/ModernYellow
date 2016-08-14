@@ -4,12 +4,15 @@
    ====================== */
 
 #include "fsmstateintro.h"
+#include "fsmstatemaininput.h"
+#include "../battlecontroller.h"
 #include "../../uicomps/uitextbox.h"
 #include "../../../mixer.h"
 #include "../../../font.h"
 #include "../../pokemon.h"
 #include "../../../sinputhandler.h"
 
+#include <SDL_log.h>
 #include <SDL_timer.h>
 
 extern pMixer_t    g_pMixer;
@@ -31,40 +34,27 @@ static const int32 PLAYER_AND_POKEMON_MOVE_SPEED = 4;
 /* ==============
    Public Methods
    ============== */
-FSMStateIntro::FSMStateIntro(
-    const std::shared_ptr<TextureResource> normalTrainerAtlas,
-    const std::shared_ptr<TextureResource> darkTrainerAtlas,
-    BattleController::uiComponentStack_t& uiComponents,
-    const BattleController::pokemonParty_t& localPokemon,
-    const BattleController::pokemonParty_t& enemyPokemon,
-    const bool isWildEncounter):
+FSMStateIntro::FSMStateIntro(BattleController& battleController):
 
-    FSMState(
-        normalTrainerAtlas, 
-        darkTrainerAtlas, 
-        uiComponents,
-        localPokemon, 
-        enemyPokemon, 
-        isWildEncounter),
-    
+    FSMState(battleController),
     m_innerState(IS_TEXTBOX_DISPLAY)
 {    
-    if (isWildEncounter)
-        g_pMixer->playAudio("sfx/cries/" + m_enemyPokemon[0]->getID() + ".wav", false, true);            
+    if (m_battleController.isWildBattle())
+        g_pMixer->playAudio("sfx/cries/" + m_battleController.getActiveEnemyPokemon().getID() + ".wav", false, true);            
 
     // Get player trainer texture
-    m_playerTexture = normalTrainerAtlas->getSubTexture(
+    m_playerTexture = m_battleController.getNormalTrainerAtlas()->getSubTexture(
         PLAYER_PORTRAIT_TU,
         PLAYER_PORTRAIT_TV,
         TRAINER_PORTRAIT_WIDTH,
         TRAINER_PORTRAIT_HEIGHT);
 
     // Load respective opponent texture
-    if (isWildEncounter)
+    if (m_battleController.isWildBattle())
         m_opponentTexture = castResToTex(
-            resmanager.loadResource("pkmnfront/" + m_enemyPokemon[0]->getName() + ".png", RT_TEXTURE));
+            resmanager.loadResource("pkmnfront/" + m_battleController.getActiveEnemyPokemon().getName() + ".png", RT_TEXTURE));
     else
-        m_opponentTexture = normalTrainerAtlas->getSubTexture(
+        m_opponentTexture = m_battleController.getNormalTrainerAtlas()->getSubTexture(
             0,
             0,
             TRAINER_PORTRAIT_WIDTH,
@@ -96,9 +86,9 @@ FSMStateIntro::FSMStateIntro(
     m_pokemonBarBallTextures[PSBT_FAINTED] = castResToTex(resmanager.loadResource("misctex/ballFainted.png", RT_TEXTURE));
 
     // Create textbox for the respective battle type
-    if (m_isWildEncounter)
+    if (m_battleController.isWildBattle())
     {
-        m_activeComponents.push(std::make_unique<UITextbox>("A wild " + m_enemyPokemon[0]->getName() + "#appeared!*"));
+        m_battleController.getUIComponentStack().push(std::make_unique<UITextbox>("A wild " + m_battleController.getActiveEnemyPokemon().getName() + "#appeared!*"));
     }
 }
 
@@ -108,12 +98,12 @@ void FSMStateIntro::update()
     {
         case IS_TEXTBOX_DISPLAY:
         {
-            if (!m_activeComponents.top()->isFinished())           
-                m_activeComponents.top()->update();
+            if (!m_battleController.getUIComponentStack().top()->isFinished())
+				m_battleController.getUIComponentStack().top()->update();
             else
             {
                 m_innerState = IS_DISPLAY_OPPONENT_POKEMON_STATUS;
-                m_activeComponents.pop();
+				m_battleController.getUIComponentStack().pop();
             }
         } break;
 
@@ -129,41 +119,35 @@ void FSMStateIntro::update()
             if (m_playerTexturePosition.x <= -(static_cast<int32>(m_playerTexture->getScaledWidth())))
             {
                 m_innerState = IS_TEXTBOX_GO_POKEMON;
-                m_activeComponents.push(std::make_unique<UITextbox>("Go! " + m_localPokemon[0]->getName() + "!^"));
+				m_battleController.getUIComponentStack().push(std::make_unique<UITextbox>("Go! " + m_battleController.getActiveLocalPokemon().getName() + "!^"));
             }
         } break;
 
         case IS_TEXTBOX_GO_POKEMON:
         {
-            if (!m_activeComponents.top()->isFinished())
+            if (!m_battleController.getUIComponentStack().top()->isFinished())
             {
-                m_activeComponents.top()->update();
+				m_battleController.getUIComponentStack().top()->update();
             }
             else
             {
                 SDL_Delay(100);
                 m_innerState = IS_POKEMON_CHARGING;
-                m_playerTexture = castResToTex(resmanager.loadResource("pkmnback/" + m_localPokemon[0]->getName() + ".png", RT_TEXTURE));
+                m_playerTexture = castResToTex(resmanager.loadResource("pkmnback/" + m_battleController.getActiveLocalPokemon().getName() + ".png", RT_TEXTURE));
             }
         } break;
 
         case IS_POKEMON_CHARGING:
         {
-            m_playerTexturePosition.x += PLAYER_AND_POKEMON_MOVE_SPEED * g_scale;
             if (m_playerTexturePosition.x >= LOCAL_ACTOR_X * static_cast<int32>(g_scale))
             {
                 m_playerTexturePosition.x = LOCAL_ACTOR_X * static_cast<int32>(g_scale);
-                //g_pMixer->playAudio("sfx/cries/" + m_localPokemon[0]->getID() + ".wav", false, true);
-
-                if (ihandler.isKeyDown(K_START)) 
-                {
-                    m_localPokemon[0]->inflictDamage(1);                                     
-                }
-                    
-
-                //SDL_Delay(1000);
-                //m_finished = true;
+                g_pMixer->playAudio("sfx/cries/" + m_battleController.getActiveLocalPokemon().getID() + ".wav", false, false);                
+                SDL_Delay(1000);
+				m_battleController.getUIComponentStack().pop();
+                m_finished = true;
             }
+            m_playerTexturePosition.x += PLAYER_AND_POKEMON_MOVE_SPEED * g_scale;
         } break;
     }
 
@@ -188,7 +172,7 @@ void FSMStateIntro::render()
                 m_playerPokemonBar->getScaledHeight());
 
             auto ballPositionIter = PLAYER_POKEMON_BAR_FIRST_BALL_X * g_scale;
-            for (const auto& pokemon : m_localPokemon)
+            for (const auto& pokemon : m_battleController.getLocalPokemonParty())
             {
                 auto pokemonState = PSBT_READY;
 
@@ -208,7 +192,7 @@ void FSMStateIntro::render()
                 ballPositionIter += DEFAULT_BLOCK_SIZE * g_scale;
             }
             
-            m_activeComponents.top()->render();
+			m_battleController.getUIComponentStack().top()->render();
         } break;
 
         case IS_PLAYER_RETREATING:
@@ -217,10 +201,10 @@ void FSMStateIntro::render()
             SDL_RenderCopy(g_pRenderer.get(), m_opponentTexture->getTexture().get(), nullptr, &m_opponentTexturePosition);
             SDL_RenderCopy(g_pRenderer.get(), m_playerTexture->getTexture().get(), nullptr, &m_playerTexturePosition);
 
-            renderOpponentPokemonStats(m_opponentPokemonStatsTexture);
-            renderOpponentPokemonHpBar(1.0f - static_cast<float>(m_enemyPokemon[0]->getCurrHp()) / static_cast<float>(m_enemyPokemon[0]->getStat(Pokemon::S_HP)));
-            renderOpponentPokemonName(m_enemyPokemon[0]->getName());
-            renderOpponentPokemonLevel(m_enemyPokemon[0]->getLevel());
+            renderOpponentPokemonStats();
+            renderOpponentPokemonHpBar(1.0f - static_cast<float>(m_battleController.getActiveEnemyPokemon().getCurrHp()) / static_cast<float>(m_battleController.getActiveEnemyPokemon().getStat(Pokemon::S_HP)));
+            renderOpponentPokemonName();
+            renderOpponentPokemonLevel();
 
         } break;
 
@@ -229,12 +213,12 @@ void FSMStateIntro::render()
             SDL_RenderCopy(g_pRenderer.get(), m_opponentTexture->getTexture().get(), nullptr, &m_opponentTexturePosition);
             SDL_RenderCopy(g_pRenderer.get(), m_playerTexture->getTexture().get(), nullptr, &m_playerTexturePosition);
 
-            renderOpponentPokemonStats(m_opponentPokemonStatsTexture);
-            renderOpponentPokemonHpBar(1.0f - static_cast<float>(m_enemyPokemon[0]->getCurrHp()) / static_cast<float>(m_enemyPokemon[0]->getStat(Pokemon::S_HP)));
-            renderOpponentPokemonName(m_enemyPokemon[0]->getName());
-            renderOpponentPokemonLevel(m_enemyPokemon[0]->getLevel());
+            renderOpponentPokemonStats();
+            renderOpponentPokemonHpBar(1.0f - static_cast<float>(m_battleController.getActiveEnemyPokemon().getCurrHp()) / static_cast<float>(m_battleController.getActiveEnemyPokemon().getStat(Pokemon::S_HP)));
+            renderOpponentPokemonName();
+            renderOpponentPokemonLevel();
 
-            m_activeComponents.top()->render();
+			m_battleController.getUIComponentStack().top()->render();
         } break;
 
         case IS_POKEMON_CHARGING:
@@ -242,20 +226,18 @@ void FSMStateIntro::render()
             SDL_RenderCopy(g_pRenderer.get(), m_opponentTexture->getTexture().get(), nullptr, &m_opponentTexturePosition);
             SDL_RenderCopy(g_pRenderer.get(), m_playerTexture->getTexture().get(), nullptr, &m_playerTexturePosition);
             
-            renderLocalPokemonStats(m_localPokemonStatsTexture);
-            renderLocalPokemonHpBar(1.0f - static_cast<float>(m_localPokemon[0]->getCurrHp()) / static_cast<float>(m_localPokemon[0]->getStat(Pokemon::S_HP)));
-            renderLocalPokemonName(m_localPokemon[0]->getName());
-            renderLocalPokemonLevel(m_localPokemon[0]->getLevel());
-            renderLocalPokemonCurrentAndMaxHP(
-                m_localPokemon[0]->getCurrHp(),
-                m_localPokemon[0]->getStat(Pokemon::S_HP));
-
-            renderOpponentPokemonStats(m_opponentPokemonStatsTexture);
-            renderOpponentPokemonHpBar(1.0f - static_cast<float>(m_enemyPokemon[0]->getCurrHp()) / static_cast<float>(m_enemyPokemon[0]->getStat(Pokemon::S_HP)));
-            renderOpponentPokemonName(m_enemyPokemon[0]->getName());
-            renderOpponentPokemonLevel(m_enemyPokemon[0]->getLevel());
+            renderLocalPokemonStats();
+            renderLocalPokemonHpBar(1.0f - static_cast<float>(m_battleController.getActiveLocalPokemon().getCurrHp()) / static_cast<float>(m_battleController.getActiveLocalPokemon().getStat(Pokemon::S_HP)));
+            renderLocalPokemonName();
+            renderLocalPokemonLevel();
+            renderLocalPokemonCurrentAndMaxHP();
+			
+            renderOpponentPokemonStats();
+            renderOpponentPokemonHpBar(1.0f - static_cast<float>(m_battleController.getActiveEnemyPokemon().getCurrHp()) / static_cast<float>(m_battleController.getActiveEnemyPokemon().getStat(Pokemon::S_HP)));
+            renderOpponentPokemonName();
+            renderOpponentPokemonLevel();
             
-            m_activeComponents.top()->render();
+			m_battleController.getUIComponentStack().top()->render();
             
         } break;
     }
@@ -264,11 +246,5 @@ void FSMStateIntro::render()
 
 std::unique_ptr<FSMState> FSMStateIntro::getSuccessor() const
 {
-    return std::make_unique<FSMStateIntro>(
-        m_normalTrainerAtlas,
-        m_darkTrainerAtlas,
-        m_activeComponents,
-        m_localPokemon,
-        m_enemyPokemon,
-        m_isWildEncounter);
+    return std::make_unique<FSMStateMainInput>(m_battleController);
 }

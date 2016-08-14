@@ -41,7 +41,7 @@ GSPlay::GSPlay():
     m_encounterInProgress(false),
     m_pBattleController(nullptr)
 {  
-    a.push_back(std::make_unique<Pokemon>("CHANSEY", 100));
+    a.push_back(std::make_unique<Pokemon>("PIKACHU", 5));
     b.push_back(std::make_unique<Pokemon>("PIDGEY", 4));
 
     auto pAtlas = castResToTex(resmanager.loadResource("tilemaps/overworldmap.png", RT_TEXTURE));    

@@ -28,15 +28,15 @@ BattleController::BattleController(
     m_textboxTexture(castResToTex(resmanager.loadResource("misctex/textbox.png", RT_TEXTURE))),
     m_normalTrainerAtlas(castResToTex(resmanager.loadResource("tilemaps/traineratlas.png", RT_TEXTURE))),
     m_darkTrainerAtlas(castResToTex(resmanager.loadResource("tilemaps/dtraineratlas.png", RT_TEXTURE))),
-    m_activeState(std::make_unique<FSMStateDarkIntro>(
-        m_normalTrainerAtlas,
-        m_darkTrainerAtlas,
-        m_uiComponentStack,
-        localPokemon,
-        enemyPokemon,
-        battleType == BT_ENCOUNTER))
+	m_enemyPokemonStatsTexture(castResToTex(resmanager.loadResource("misctex/enemy_stats.png", RT_TEXTURE))),
+	m_localPokemonStatsTexture(castResToTex(resmanager.loadResource("misctex/player_stats.png", RT_TEXTURE))),
+    m_activeState(std::make_unique<FSMStateDarkIntro>(*this))
 {
-    
+	for (const auto& pokemon: m_localPokemon)
+		m_localPokemonActorTextures[pokemon->getName()] = castResToTex(resmanager.loadResource("pkmnback/" + pokemon->getName() + ".png", RT_TEXTURE));
+
+	for (const auto& pokemon: m_enemyPokemon)
+		m_enemyPokemonActorTextures[pokemon->getName()] = castResToTex(resmanager.loadResource("pkmnfront/" + pokemon->getName() + ".png", RT_TEXTURE));
 }
 
 BattleController::~BattleController(){}
@@ -69,4 +69,64 @@ void BattleController::render()
     
     m_activeState->render();
 
+}
+
+const BattleController::pokemonParty_t& BattleController::getLocalPokemonParty() const
+{
+	return m_localPokemon;
+}
+
+const BattleController::pokemonParty_t& BattleController::getEnemyPokemonParty() const
+{
+	return m_enemyPokemon;
+}
+
+Pokemon& BattleController::getActiveLocalPokemon() const
+{
+	return *m_localPokemon[0];
+}
+
+Pokemon& BattleController::getActiveEnemyPokemon() const
+{
+	return *m_enemyPokemon[0];
+}
+
+bool BattleController::isWildBattle() const
+{
+	return m_battleType == BattleType::BT_ENCOUNTER;
+}
+
+std::shared_ptr<TextureResource> BattleController::getLocalPokemonActorTexture(const std::string& pokemonName) const
+{
+	return m_localPokemonActorTextures.at(pokemonName);
+}
+
+std::shared_ptr<TextureResource> BattleController::getEnemyPokemonActorTexture(const std::string& pokemonName) const
+{
+	return m_enemyPokemonActorTextures.at(pokemonName);
+}
+
+std::shared_ptr<TextureResource> BattleController::getLocalPokemonStatsTexture() const
+{
+	return m_localPokemonStatsTexture;
+}
+
+std::shared_ptr<TextureResource> BattleController::getEnemyPokemonStatsTexture() const
+{
+	return m_enemyPokemonStatsTexture;
+}
+
+std::shared_ptr<TextureResource> BattleController::getNormalTrainerAtlas() const
+{
+	return m_normalTrainerAtlas;
+}
+
+std::shared_ptr<TextureResource> BattleController::getDarkTrainerAtlas() const
+{
+	return m_darkTrainerAtlas;
+}
+
+BattleController::uiComponentStack_t& BattleController::getUIComponentStack()
+{
+	return m_uiComponentStack;
 }

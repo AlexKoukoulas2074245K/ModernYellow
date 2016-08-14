@@ -20,6 +20,7 @@ struct GameInfo::gameInfoImpl
 {
     Json::Value m_pkmnRoot;    
     Json::Value m_itemRoot;
+	Json::Value m_moveRoot;
     bool m_ready;
 };
 
@@ -44,6 +45,16 @@ const Json::Value& GameInfo::getPokemonInfo(const std::string& name)
     return m_impl->m_pkmnRoot[name];
 }
 
+const Json::Value& GameInfo::getItemInfo(const std::string& name)
+{
+	return m_impl->m_itemRoot[name];
+}
+
+const Json::Value& GameInfo::getMoveInfo(const std::string& name)
+{
+	return m_impl->m_moveRoot[name];
+}
+
 /* ===============
    Private Methods
    =============== */
@@ -55,6 +66,10 @@ bool GameInfo::readJsonData()
     Json::Reader jsonItemReader;
     std::ifstream jsonItemFile(g_datPath + "items.json");
 
+	Json::Reader jsonMoveReader;
+	std::ifstream jsonMoveFile(g_datPath + "moves.json");
+
     return jsonPkmnReader.parse(jsonPkmnFile, m_impl->m_pkmnRoot) &&
-           jsonItemReader.parse(jsonItemFile, m_impl->m_itemRoot);    
+           jsonItemReader.parse(jsonItemFile, m_impl->m_itemRoot) &&
+		   jsonMoveReader.parse(jsonMoveFile, m_impl->m_moveRoot);    
 }

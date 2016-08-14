@@ -12,6 +12,9 @@
 extern pRenderer_t g_pRenderer;
 extern uint32 g_scale;
 
+const string Font::FONT_RIGHT_ARROW_NORMAL = "}";
+const string Font::FONT_RIGHT_ARROW_PRESSED = "{";
+
 /* ==============
    Public Methods
    ============== */

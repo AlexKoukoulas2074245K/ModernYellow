@@ -113,6 +113,7 @@ void Level::update()
                 m_animationInProgress = false;
             }
 
+			for (const auto& owobject : m_owobjects)      owobject->wildPokemonAnimation(m_wildFlashEffectStep);
             for (const auto& seaTile : m_seaTiles)       seaTile->wildPokemonAnimation(m_wildFlashEffectStep);
             for (const auto& flowerTile : m_flowerTiles) flowerTile->wildPokemonAnimation(m_wildFlashEffectStep);
             for (const auto& encTile : m_encounterTiles) encTile->wildPokemonAnimation(m_wildFlashEffectStep);
@@ -120,6 +121,7 @@ void Level::update()
             if (m_wildFlashEffectStep == 1) calculateVisibleArea(m_visibleArea);
             m_pLevelTex->wildPokemonAnimation(m_visibleArea, m_wildFlashEffectStep++);
         }
+		return;
     }
     else if (m_pEncAniController->isPlayingAnimation())
     {           

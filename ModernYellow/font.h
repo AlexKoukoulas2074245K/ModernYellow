@@ -19,6 +19,8 @@ class Font final
 public:
 
     static const uint32 FONT_SIZE = 16U;
+	static const string FONT_RIGHT_ARROW_NORMAL;
+	static const string FONT_RIGHT_ARROW_PRESSED;
 
 public:
 

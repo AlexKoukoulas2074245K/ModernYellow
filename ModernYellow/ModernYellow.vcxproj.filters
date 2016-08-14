@@ -206,5 +206,8 @@
     <ClInclude Include="game\battle\battlefsm\fsmstatemaininput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="game\uicomps\uimoveselect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

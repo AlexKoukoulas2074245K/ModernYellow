@@ -11,19 +11,13 @@
 
 #include <vector>
 
-
 class Pokemon;
+class BattleController;
 class FSMState
 {
 public:
 
-    FSMState(
-        std::shared_ptr<TextureResource> normalTrainerAtlas,
-        std::shared_ptr<TextureResource> darkTrainerAtlas,
-        BattleController::uiComponentStack_t& uiComponents,
-        const BattleController::pokemonParty_t& localPokemon,
-        const BattleController::pokemonParty_t& enemyPokemon,
-        const bool isWildEncounter);
+    FSMState(BattleController& battleController);
 
     virtual ~FSMState() = 0;
 
@@ -37,32 +31,20 @@ public:
 
 protected:
 
-    void renderLocalPokemonStats(const std::shared_ptr<TextureResource>& resource);
+    void renderLocalPokemonStats();
     void renderLocalPokemonHpBar(const float percentDepleted);
     void renderLocalActor(const std::shared_ptr<TextureResource>& resource);
-    void renderLocalPokemonName(const std::string& name);
-    void renderLocalPokemonLevel(const int8 level);
-    void renderLocalPokemonCurrentAndMaxHP(const int16 currHp, const int16 maxHp);
-    void renderAllLocalPlayerSceneObjects(
-        const std::shared_ptr<TextureResource>& pokemonStatsTexture,
-        const std::shared_ptr<TextureResource>& actorTexture,
-        const int8 pokemonLevel,
-        const int16 currHp,
-        const int16 maxHp,
-        const std::string& pokemonName);
+    void renderLocalPokemonName();
+    void renderLocalPokemonLevel();
+    void renderLocalPokemonCurrentAndMaxHP();
+    void renderAllDefaultLocalSceneObjects();
    
-    void renderOpponentPokemonStats(const std::shared_ptr<TextureResource>& resource);
+    void renderOpponentPokemonStats();
     void renderOpponentPokemonHpBar(const float percentDepleted);
     void renderOpponentActor(const std::shared_ptr<TextureResource>& resource);
-    void renderOpponentPokemonName(const std::string& name);
-    void renderOpponentPokemonLevel(const int8 level);
-    void renderAllOpponentSceneObjects(
-        const std::shared_ptr<TextureResource>& pokemonStatsTexture,
-        const std::shared_ptr<TextureResource>& actorTexture,
-        const int8 pokemonLevel,
-        const int16 currHp,
-        const int16 maxHp,
-        const std::string& pokemonName);
+    void renderOpponentPokemonName();
+    void renderOpponentPokemonLevel();
+    void renderAllDefaultOpponentSceneObjects();
 
 protected:
 
@@ -99,17 +81,7 @@ protected:
 
 protected:
 
-    std::shared_ptr<TextureResource> m_normalTrainerAtlas;
-    std::shared_ptr<TextureResource> m_darkTrainerAtlas;
-    std::shared_ptr<TextureResource> m_opponentPokemonStatsTexture;
-    std::shared_ptr<TextureResource> m_localPokemonStatsTexture;
-
-    const BattleController::pokemonParty_t& m_localPokemon;
-    const BattleController::pokemonParty_t& m_enemyPokemon;
-    
-    std::stack<std::unique_ptr<UIComponent>>& m_activeComponents;
-    
-    bool m_isWildEncounter;
+	BattleController& m_battleController;
     bool m_finished;
 
 };

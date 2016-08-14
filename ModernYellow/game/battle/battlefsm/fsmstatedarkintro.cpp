@@ -7,6 +7,8 @@
 #include "fsmstateintro.h"
 #include "../../pokemon.h"
 
+#include <SDL_log.h>
+
 extern pRenderer_t g_pRenderer;
 extern uint32 g_scale;
 extern uint32 g_width;
@@ -21,33 +23,21 @@ static const int32 DEFAULT_INTRO_MOVING_SPEED = 2;
    Public Methods
    ============== */
 
-FSMStateDarkIntro::FSMStateDarkIntro(
-    const std::shared_ptr<TextureResource> normalTrainerAtlas,
-    const std::shared_ptr<TextureResource> darkTrainerAtlas,
-    BattleController::uiComponentStack_t& uiComponents,
-    const BattleController::pokemonParty_t& localPokemon,
-    const BattleController::pokemonParty_t& enemyPokemon,
-    const bool isWildEncounter):
+FSMStateDarkIntro::FSMStateDarkIntro(BattleController& battleController):
     
-    FSMState(
-        normalTrainerAtlas, 
-        darkTrainerAtlas, 
-        uiComponents,
-        localPokemon,
-        enemyPokemon, 
-        isWildEncounter)         
+    FSMState(battleController)         
 {
-    m_playerDarkTexture = darkTrainerAtlas->getSubTexture(
+    m_playerDarkTexture = m_battleController.getDarkTrainerAtlas()->getSubTexture(
         PLAYER_PORTRAIT_TU, 
         PLAYER_PORTRAIT_TV, 
         TRAINER_PORTRAIT_WIDTH, 
         TRAINER_PORTRAIT_HEIGHT);        
 
-    if (isWildEncounter)    
+    if (m_battleController.isWildBattle())    
         m_opponentDarkTexture = castResToTex(
-            resmanager.loadResource("pkmnfront/" + m_enemyPokemon[0]->getName() + "_DARK.png", RT_TEXTURE));
+            resmanager.loadResource("pkmnfront/" + m_battleController.getActiveEnemyPokemon().getName() + "_DARK.png", RT_TEXTURE));
     else
-        m_opponentDarkTexture = darkTrainerAtlas->getSubTexture(
+        m_opponentDarkTexture = m_battleController.getDarkTrainerAtlas()->getSubTexture(
             0,
             0,
             TRAINER_PORTRAIT_WIDTH, 
@@ -63,7 +53,7 @@ FSMStateDarkIntro::FSMStateDarkIntro(
 
     m_opponentTexturePosition = 
 	{
-        static_cast<int32>(-TRAINER_PORTRAIT_WIDTH * g_scale + 4 * g_scale), 
+        static_cast<int32>(-TRAINER_PORTRAIT_WIDTH * g_scale + 8 * g_scale), 
         0, 
         static_cast<int32>(TRAINER_PORTRAIT_WIDTH * g_scale), 
         static_cast<int32>(TRAINER_PORTRAIT_HEIGHT * g_scale)
@@ -91,11 +81,5 @@ void FSMStateDarkIntro::render()
 
 std::unique_ptr<FSMState> FSMStateDarkIntro::getSuccessor() const
 {
-    return std::make_unique<FSMStateIntro>(
-        m_normalTrainerAtlas,
-        m_darkTrainerAtlas,
-        m_activeComponents,
-        m_localPokemon, 
-        m_enemyPokemon, 
-        m_isWildEncounter);
+    return std::make_unique<FSMStateIntro>(m_battleController);
 }

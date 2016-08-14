@@ -14,13 +14,7 @@ class TextureResource;
 class FSMStateDarkIntro: public FSMState
 {
 public:        
-    FSMStateDarkIntro(
-        const std::shared_ptr<TextureResource> normalTrainerAtlas,
-        const std::shared_ptr<TextureResource> darkTrainerAtlas,
-        BattleController::uiComponentStack_t& uiComponents,
-        const BattleController::pokemonParty_t& localPokemon,
-        const BattleController::pokemonParty_t& enemyPokemon,
-        const bool isWildEncounter);
+    FSMStateDarkIntro(BattleController& battleController);
 
     void update() override;
 

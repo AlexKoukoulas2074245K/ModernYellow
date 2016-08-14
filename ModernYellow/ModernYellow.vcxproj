@@ -124,6 +124,7 @@
     <ClInclude Include="game\tile.h" />
     <ClInclude Include="game\uicomps\uiboolean.h" />
     <ClInclude Include="game\uicomps\uicomponent.h" />
+    <ClInclude Include="game\uicomps\uimoveselect.h" />
     <ClInclude Include="game\uicomps\uitextbox.h" />
     <ClInclude Include="gameinfo.h" />
     <ClInclude Include="jsonutil\json-forwards.h" />

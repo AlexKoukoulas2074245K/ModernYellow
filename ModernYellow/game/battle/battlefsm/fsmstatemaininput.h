@@ -8,19 +8,34 @@
 #include "fsmstate.h"
 #include "../battlecontroller.h"
 
+
 class FSMStateMainInput: public FSMState 
 {
-	FSMStateMainInput(
-		const std::shared_ptr<TextureResource> normalTrainerAtlas,
-		const std::shared_ptr<TextureResource> darkTrainerAtlas,
-		BattleController::uiComponentStack_t& uiComponents,
-		const BattleController::pokemonParty_t& localPokemon,
-		const BattleController::pokemonParty_t& enemyPokemon,
-		const bool isWildEncounter);
+public:
+
+	enum MainInputOption
+	{
+		MIO_FIGHT = 0,
+		MIO_POKEMON = 1,
+		MIO_ITEMS = 2,
+		MIO_RUN = 3
+	};
+	
+	FSMStateMainInput(BattleController& battleController);
 	
 	void update() override;
 
 	void render() override;
 
 	std::unique_ptr<FSMState> getSuccessor() const override;
+
+private:
+
+	void updateMainOptions();
+
+private:
+
+	std::shared_ptr<TextureResource> m_mainInputTexture;
+	MainInputOption m_currMainOption;
+
 };

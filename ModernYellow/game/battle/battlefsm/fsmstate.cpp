@@ -4,6 +4,8 @@
    ====================== */
 
 #include "fsmstate.h"
+#include "../battlecontroller.h"
+#include "../../pokemon.h"
 #include "../../../font.h"
 #include <SDL_log.h>
 
@@ -15,23 +17,12 @@ extern uint32 g_scale;
    Public Methods
    ============== */
 
-FSMState::FSMState(
-    std::shared_ptr<TextureResource> normalTrainerAtlas,
-    std::shared_ptr<TextureResource> darkTrainerAtlas,
-    BattleController::uiComponentStack_t& uiComponents,
-    const BattleController::pokemonParty_t& localPokemon,
-    const BattleController::pokemonParty_t& enemyPokemon,
-    const bool isWildEncounter):
+FSMState::FSMState(BattleController& battleController):
 
-    m_normalTrainerAtlas(normalTrainerAtlas),
-    m_darkTrainerAtlas(darkTrainerAtlas),
-    m_opponentPokemonStatsTexture(castResToTex(resmanager.loadResource("misctex/enemy_stats.png", RT_TEXTURE))),
-    m_localPokemonStatsTexture(castResToTex(resmanager.loadResource("misctex/player_stats.png", RT_TEXTURE))),
-    m_activeComponents(uiComponents),
-    m_localPokemon(localPokemon),
-    m_enemyPokemon(enemyPokemon),
-    m_isWildEncounter(isWildEncounter),
-    m_finished(false){}
+	m_battleController(battleController),
+    m_finished(false)
+{
+}
 
 FSMState::~FSMState(){}
 
@@ -45,15 +36,15 @@ bool FSMState::isFinished() const
    ================= */
 
 // Local Player helper rendering methods
-void FSMState::renderLocalPokemonStats(const std::shared_ptr<TextureResource>& resource)
+void FSMState::renderLocalPokemonStats()
 {
     SDLRender(
         g_pRenderer,
-        resource->getTexture().get(),
+        m_battleController.getLocalPokemonStatsTexture()->getTexture().get(),
         LOCAL_POKEMON_STATS_X * g_scale,
         LOCAL_POKEMON_STATS_Y * g_scale,                
-        resource->getScaledWidth(),
-        resource->getScaledHeight());
+		m_battleController.getLocalPokemonStatsTexture()->getScaledWidth(),
+		m_battleController.getLocalPokemonStatsTexture()->getScaledHeight());
 }
 
 void FSMState::renderLocalPokemonHpBar(const float percentDepleted)
@@ -95,19 +86,19 @@ void FSMState::renderLocalActor(const std::shared_ptr<TextureResource>& resource
         resource->getScaledHeight());
 }
 
-void FSMState::renderLocalPokemonName(const std::string& name)
+void FSMState::renderLocalPokemonName()
 {
-    g_pFont->renderString(name, LOCAL_POKEMON_NAME_X * g_scale, LOCAL_POKEMON_NAME_Y * g_scale);
+    g_pFont->renderString(m_battleController.getActiveLocalPokemon().getName(), LOCAL_POKEMON_NAME_X * g_scale, LOCAL_POKEMON_NAME_Y * g_scale);
 }
 
-void FSMState::renderLocalPokemonLevel(const int8 level)
+void FSMState::renderLocalPokemonLevel()
 {
-    g_pFont->renderString(std::to_string(level), LOCAL_POKEMON_LEVEL_X * g_scale, LOCAL_POKEMON_LEVEL_Y * g_scale);
+    g_pFont->renderString(std::to_string(m_battleController.getActiveLocalPokemon().getLevel()), LOCAL_POKEMON_LEVEL_X * g_scale, LOCAL_POKEMON_LEVEL_Y * g_scale);
 }
 
-void FSMState::renderLocalPokemonCurrentAndMaxHP(const int16 currHp, const int16 maxHp)
+void FSMState::renderLocalPokemonCurrentAndMaxHP()
 {
-    const auto currHpString = std::to_string(currHp);
+    const auto currHpString = std::to_string(m_battleController.getActiveLocalPokemon().getCurrHp());
     auto lastCharIndex = currHpString.size() - 1;
     for (int32 i = lastCharIndex; i >= 0; --i)
         g_pFont->renderString(
@@ -115,7 +106,7 @@ void FSMState::renderLocalPokemonCurrentAndMaxHP(const int16 currHp, const int16
             LOCAL_POKEMON_CURR_HP_X * g_scale - (lastCharIndex - i) * DEFAULT_BLOCK_SIZE * g_scale,
             LOCAL_POKEMON_CURR_HP_Y * g_scale);
     
-    const auto maxHpString = std::to_string(maxHp);
+    const auto maxHpString = std::to_string(m_battleController.getActiveLocalPokemon().getStat(Pokemon::S_HP));
     lastCharIndex = maxHpString.size() - 1;
     for (int32 i = lastCharIndex; i >= 0; --i)
         g_pFont->renderString(
@@ -124,32 +115,26 @@ void FSMState::renderLocalPokemonCurrentAndMaxHP(const int16 currHp, const int16
             LOCAL_POKEMON_MAX_HP_Y * g_scale);
 }
 
-void FSMState::renderAllLocalPlayerSceneObjects(
-    const std::shared_ptr<TextureResource>& pokemonStatsTexture,
-    const std::shared_ptr<TextureResource>& actorTexture,
-    const int8 pokemonLevel,
-    const int16 currHp,
-    const int16 maxHp,    
-    const std::string& pokemonName)
+void FSMState::renderAllDefaultLocalSceneObjects()
 {
-    renderLocalPokemonStats(pokemonStatsTexture);
-    renderLocalPokemonHpBar(1.0f - static_cast<float>(currHp) / static_cast<float>(maxHp));
-    renderLocalActor(actorTexture);
-    renderLocalPokemonLevel(pokemonLevel);
-    renderLocalPokemonName(pokemonName);
-    renderLocalPokemonCurrentAndMaxHP(currHp, maxHp);
+    renderLocalPokemonStats();
+    renderLocalPokemonHpBar(1.0f - static_cast<float>(m_battleController.getActiveLocalPokemon().getCurrHp()) / static_cast<float>(m_battleController.getActiveLocalPokemon().getStat(Pokemon::S_HP)));
+    renderLocalActor(m_battleController.getLocalPokemonActorTexture(m_battleController.getActiveLocalPokemon().getName()));
+    renderLocalPokemonLevel();
+    renderLocalPokemonName();
+    renderLocalPokemonCurrentAndMaxHP();
 }
 
 // Opponent player helper rendering methods
-void FSMState::renderOpponentPokemonStats(const std::shared_ptr<TextureResource>& resource)
+void FSMState::renderOpponentPokemonStats()
 {
     SDLRender(
         g_pRenderer,
-        resource->getTexture().get(),
+        m_battleController.getEnemyPokemonStatsTexture()->getTexture().get(),
         OPPONENT_POKEMON_STATS_X * g_scale,
         OPPONENT_POKEMON_STATS_Y * g_scale,
-        resource->getScaledWidth(),
-        resource->getScaledHeight());
+        m_battleController.getEnemyPokemonStatsTexture()->getScaledWidth(),
+        m_battleController.getEnemyPokemonStatsTexture()->getScaledHeight());
 }
 
 void FSMState::renderOpponentPokemonHpBar(const float percentDepleted)
@@ -180,14 +165,14 @@ void FSMState::renderOpponentPokemonHpBar(const float percentDepleted)
     SDL_RenderFillRect(g_pRenderer.get(), &hpArea);
 }
 
-void FSMState::renderOpponentPokemonName(const std::string& name)
+void FSMState::renderOpponentPokemonName()
 {
-    g_pFont->renderString(name, OPPONENT_POKEMON_NAME_X * g_scale, OPPONENT_POKEMON_NAME_Y * g_scale);
+    g_pFont->renderString(m_battleController.getActiveEnemyPokemon().getName(), OPPONENT_POKEMON_NAME_X * g_scale, OPPONENT_POKEMON_NAME_Y * g_scale);
 }
 
-void FSMState::renderOpponentPokemonLevel(const int8 level)
+void FSMState::renderOpponentPokemonLevel()
 {
-    g_pFont->renderString(std::to_string(level), OPPONENT_POKEMON_LEVEL_X * g_scale, OPPONENT_POKEMON_LEVEL_Y * g_scale);
+    g_pFont->renderString(std::to_string(m_battleController.getActiveEnemyPokemon().getLevel()), OPPONENT_POKEMON_LEVEL_X * g_scale, OPPONENT_POKEMON_LEVEL_Y * g_scale);
 }
 
 void FSMState::renderOpponentActor(const std::shared_ptr<TextureResource>& resource)
@@ -201,17 +186,11 @@ void FSMState::renderOpponentActor(const std::shared_ptr<TextureResource>& resou
         resource->getScaledHeight());
 }
 
-void FSMState::renderAllOpponentSceneObjects(
-    const std::shared_ptr<TextureResource>& pokemonStatsTexture,
-    const std::shared_ptr<TextureResource>& actorTexture,
-    const int8 pokemonLevel,    
-    const int16 currHp,
-    const int16 maxHp,
-    const std::string& pokemonName)
+void FSMState::renderAllDefaultOpponentSceneObjects()
 {
-    renderOpponentPokemonStats(pokemonStatsTexture);    
-    renderOpponentPokemonHpBar(1.0f - static_cast<float>(currHp) / static_cast<float>(maxHp));
-    renderOpponentActor(actorTexture);
-    renderOpponentPokemonLevel(pokemonLevel);
-    renderOpponentPokemonName(pokemonName);
+    renderOpponentPokemonStats();    
+    renderOpponentPokemonHpBar(1.0f - static_cast<float>(m_battleController.getActiveEnemyPokemon().getCurrHp()) / static_cast<float>(m_battleController.getActiveEnemyPokemon().getStat(Pokemon::S_HP)));
+	renderOpponentActor(m_battleController.getEnemyPokemonActorTexture(m_battleController.getActiveEnemyPokemon().getName()));
+    renderOpponentPokemonLevel();
+    renderOpponentPokemonName();
 }
