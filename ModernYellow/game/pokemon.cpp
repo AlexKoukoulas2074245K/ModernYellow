@@ -4,6 +4,7 @@
    ====================== */
 
 #include "pokemon.h"
+#include "move.h"
 #include "pokemonstatutil.h"
 #include "../jsonutil/json.h"
 #include "../gameinfo.h"
@@ -25,8 +26,11 @@ Pokemon::Pokemon(const std::string name, const int8 level):
     initEffortValues();
     initBaseStats();    
     initMiscInfo();
+	initMoveSet();
     calculateCurrentStats();
 }
+
+Pokemon::~Pokemon() {}
 
 void Pokemon::inflictDamage(const int32 damage) 
 {
@@ -131,6 +135,20 @@ void Pokemon::initMiscInfo()
     m_ovimageType = std::move(m_infoRoot["ovimagetype"].asString());
 }
 
+void Pokemon::initMoveSet()
+{
+	m_moveset = { nullptr, nullptr, nullptr, nullptr };
+	auto index = 0;
+
+	for (auto& moveLevelPair : m_learnset)
+	{
+		if (moveLevelPair.level <= m_level)
+		{
+			index = (index + 1) % 4;
+			m_moveset[index] = std::make_unique<Move>(moveLevelPair.moveName);
+		}
+	}
+}
 
 void Pokemon::calculateCurrentStats()
 {

@@ -105,6 +105,9 @@
     <ClCompile Include="game\battle\battlefsm\fsmstatemaininput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="game\move.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mydef.h">
@@ -207,6 +210,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="game\uicomps\uimoveselect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="game\move.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

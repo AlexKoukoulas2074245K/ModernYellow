@@ -83,6 +83,7 @@
     <ClCompile Include="game\battle\battlefsm\fsmstatemaininput.cpp" />
     <ClCompile Include="game\encounteranimationcontroller.cpp" />
     <ClCompile Include="game\level.cpp" />
+    <ClCompile Include="game\move.cpp" />
     <ClCompile Include="game\npc.cpp" />
     <ClCompile Include="game\overworldobject.cpp" />
     <ClCompile Include="game\player.cpp" />
@@ -115,6 +116,7 @@
     <ClInclude Include="game\battle\battlefsm\fsmstatemaininput.h" />
     <ClInclude Include="game\encounteranimationcontroller.h" />
     <ClInclude Include="game\level.h" />
+    <ClInclude Include="game\move.h" />
     <ClInclude Include="game\npc.h" />
     <ClInclude Include="game\overworldobject.h" />
     <ClInclude Include="game\player.h" />

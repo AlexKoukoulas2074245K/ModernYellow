@@ -18,8 +18,6 @@
 #include "strutils.h"
 #include "font.h"
 #include "gameinfo.h"
-#include "game/encounteranimationcontroller.h"
-#include "game/pokemon.h"
 
 #include <SDL.h>
 #include <SDL_image.h>

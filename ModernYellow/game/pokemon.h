@@ -16,6 +16,7 @@ struct MoveLevelPair
 };
 
 namespace Json { class Value; }
+class Move;
 class Pokemon
 {
 public:
@@ -40,6 +41,8 @@ public:
 
     Pokemon(const std::string name, const int8 level);
 
+	~Pokemon();
+
     void inflictDamage(const int32 damage);
 
     const std::string& getName() const;
@@ -60,26 +63,28 @@ private:
 
     void initIndividualValues();
     void initEffortValues();
-    void initBaseStats();    
+    void initBaseStats();
     void initMiscInfo();
+	void initMoveSet();
 
     void calculateCurrentStats();
 
 private:
 
-    std::string                m_name;
-    std::string                m_id;
-    int8                       m_level;
-    std::string                m_ovimageType;
-    std::vector<std::string>   m_type;
-    std::array<std::string, 2> m_evolution;
-    std::vector<MoveLevelPair> m_learnset;
-    std::array<uint8, 5>       m_individualValues;
-    std::array<uint16, 5>      m_effortValues;
-    std::array<int16, 5>       m_baseStats;    
-    std::array<int16, 5>       m_currStats;
-    int16                      m_currHp;
-    Status                     m_status;
+    std::string                          m_name;
+    std::string                          m_id;
+    int8                                 m_level;
+    std::string                          m_ovimageType;
+    std::vector<std::string>             m_type;
+    std::array<std::string, 2>           m_evolution;
+    std::vector<MoveLevelPair>           m_learnset;
+    std::array<uint8, 5>                 m_individualValues;
+    std::array<uint16, 5>                m_effortValues;
+    std::array<int16, 5>                 m_baseStats;    
+    std::array<int16, 5>                 m_currStats;
+	std::array<std::unique_ptr<Move>, 4> m_moveset;
+    int16                                m_currHp;
+    Status                               m_status;
 
     const Json::Value& m_infoRoot;
 };
