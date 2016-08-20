@@ -108,6 +108,9 @@
     <ClCompile Include="game\move.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="game\uicomps\uimoveselect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mydef.h">

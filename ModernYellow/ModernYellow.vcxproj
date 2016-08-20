@@ -92,6 +92,7 @@
     <ClCompile Include="game\tile.cpp" />
     <ClCompile Include="game\uicomps\uiboolean.cpp" />
     <ClCompile Include="game\uicomps\uicomponent.cpp" />
+    <ClCompile Include="game\uicomps\uimoveselect.cpp" />
     <ClCompile Include="game\uicomps\uitextbox.cpp" />
     <ClCompile Include="gstates\gsplay.cpp" />
     <ClCompile Include="gstates\gstate.cpp" />

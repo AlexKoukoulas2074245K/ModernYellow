@@ -32,10 +32,13 @@ public:
 private:
 
 	void updateMainOptions();
+	
+	void onMoveSelectionFinish(const bool);
 
 private:
 
 	std::shared_ptr<TextureResource> m_mainInputTexture;
 	MainInputOption m_currMainOption;
+	int8 m_currMoveSelectedIndex;
 
 };

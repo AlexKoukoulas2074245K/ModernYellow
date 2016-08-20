@@ -26,6 +26,7 @@
 
 
 #define CORRUPTED_LEVEL() {SDL_FORCE_DISPLAY_ERROR("Corrupted level file: " + m_name); return false;}
+#define NO_WILD_POKEMON_ANIMATION
 
 extern string g_datPath;
 extern string g_texPath;
@@ -98,6 +99,12 @@ void Level::update()
 {    
     if (m_animationInProgress)
     {
+
+#if defined(NO_WILD_POKEMON_ANIMATION)
+		m_animationInProgress = false;
+		return;
+#endif
+
         if (!--m_wildFlashEffectDelay)
         {
             m_wildFlashEffectDelay = LEVEL_WILD_ENCOUNTER_FLASH_DELAY;

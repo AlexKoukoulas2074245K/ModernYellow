@@ -45,6 +45,10 @@ public:
 
     void inflictDamage(const int32 damage);
 
+	const std::array<std::unique_ptr<Move>, 4>& getMoveSet() const;
+	
+	const std::array<int8, 4>& getPPs() const;
+
     const std::string& getName() const;
 
     const std::string& getID() const;
@@ -83,6 +87,7 @@ private:
     std::array<int16, 5>                 m_baseStats;    
     std::array<int16, 5>                 m_currStats;
 	std::array<std::unique_ptr<Move>, 4> m_moveset;
+	std::array<int8, 4>                  m_currPPs;
     int16                                m_currHp;
     Status                               m_status;
 

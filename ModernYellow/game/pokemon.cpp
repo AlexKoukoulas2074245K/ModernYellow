@@ -42,6 +42,16 @@ void Pokemon::inflictDamage(const int32 damage)
         m_currHp = m_currStats[S_HP];    
 }
 
+const std::array<std::unique_ptr<Move>, 4>& Pokemon::getMoveSet() const
+{
+	return m_moveset;
+}
+
+const std::array<int8, 4>& Pokemon::getPPs() const
+{
+	return m_currPPs;
+}
+
 const std::string& Pokemon::getName() const
 {
     return m_name;
@@ -144,8 +154,9 @@ void Pokemon::initMoveSet()
 	{
 		if (moveLevelPair.level <= m_level)
 		{
-			index = (index + 1) % 4;
 			m_moveset[index] = std::make_unique<Move>(moveLevelPair.moveName);
+			m_currPPs[index] = m_moveset[index]->getPP();
+			index = (index + 1) % 4;
 		}
 	}
 }
