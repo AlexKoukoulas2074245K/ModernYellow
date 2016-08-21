@@ -111,6 +111,12 @@
     <ClCompile Include="game\uicomps\uimoveselect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="game\battle\battlefsm\fsmstatecoreturn.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="game\battle\battlecalcutil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mydef.h">
@@ -216,6 +222,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="game\move.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="game\battle\battlefsm\fsmstatecoreturn.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="game\battle\battlecalcutil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

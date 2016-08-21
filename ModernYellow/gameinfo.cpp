@@ -21,6 +21,7 @@ struct GameInfo::gameInfoImpl
     Json::Value m_pkmnRoot;    
     Json::Value m_itemRoot;
 	Json::Value m_moveRoot;
+	Json::Value m_typeEffectivenessRoot;
     bool m_ready;
 };
 
@@ -40,19 +41,24 @@ bool GameInfo::isReady() const
     return m_impl->m_ready;
 }
 
-const Json::Value& GameInfo::getPokemonInfo(const std::string& name)
+const Json::Value& GameInfo::getPokemonInfo(const std::string& name) const
 {
     return m_impl->m_pkmnRoot[name];
 }
 
-const Json::Value& GameInfo::getItemInfo(const std::string& name)
+const Json::Value& GameInfo::getItemInfo(const std::string& name) const
 {
 	return m_impl->m_itemRoot[name];
 }
 
-const Json::Value& GameInfo::getMoveInfo(const std::string& name)
+const Json::Value& GameInfo::getMoveInfo(const std::string& name) const
 {
 	return m_impl->m_moveRoot[name];
+}
+
+const Json::Value& GameInfo::getTypeEffectiveness(const std::string& type) const
+{
+	return m_impl->m_typeEffectivenessRoot[type];
 }
 
 /* ===============
@@ -69,7 +75,11 @@ bool GameInfo::readJsonData()
 	Json::Reader jsonMoveReader;
 	std::ifstream jsonMoveFile(g_datPath + "moves.json");
 
+	Json::Reader jsonTypeEffectivenessReader;
+	std::ifstream jsonTypeEffectivenessFile(g_datPath + "type_effectiveness.json");
+
     return jsonPkmnReader.parse(jsonPkmnFile, m_impl->m_pkmnRoot) &&
            jsonItemReader.parse(jsonItemFile, m_impl->m_itemRoot) &&
-		   jsonMoveReader.parse(jsonMoveFile, m_impl->m_moveRoot);    
+		   jsonMoveReader.parse(jsonMoveFile, m_impl->m_moveRoot) &&
+		   jsonTypeEffectivenessReader.parse(jsonTypeEffectivenessFile, m_impl->m_typeEffectivenessRoot);    
 }

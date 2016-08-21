@@ -53,6 +53,8 @@ public:
 
     const std::string& getID() const;
 
+	const std::vector<std::string>& getType() const;
+
     Status getStatus() const;
 
     int8 getLevel() const;
@@ -60,6 +62,8 @@ public:
     int16 getCurrHp() const;
 
     int16 getStat(const Stat& stat) const;
+
+	int16 getBaseStat(const Stat& stat) const;
 
     bool hasFainted() const;    
 

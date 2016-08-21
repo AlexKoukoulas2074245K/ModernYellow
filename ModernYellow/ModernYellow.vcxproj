@@ -76,8 +76,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="font.cpp" />
+    <ClCompile Include="game\battle\battlecalcutil.cpp" />
     <ClCompile Include="game\battle\battlecontroller.cpp" />
     <ClCompile Include="game\battle\battlefsm\fsmstate.cpp" />
+    <ClCompile Include="game\battle\battlefsm\fsmstatecoreturn.cpp" />
     <ClCompile Include="game\battle\battlefsm\fsmstatedarkintro.cpp" />
     <ClCompile Include="game\battle\battlefsm\fsmstateintro.cpp" />
     <ClCompile Include="game\battle\battlefsm\fsmstatemaininput.cpp" />
@@ -110,8 +112,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="font.h" />
+    <ClInclude Include="game\battle\battlecalcutil.h" />
     <ClInclude Include="game\battle\battlecontroller.h" />
     <ClInclude Include="game\battle\battlefsm\fsmstate.h" />
+    <ClInclude Include="game\battle\battlefsm\fsmstatecoreturn.h" />
     <ClInclude Include="game\battle\battlefsm\fsmstatedarkintro.h" />
     <ClInclude Include="game\battle\battlefsm\fsmstateintro.h" />
     <ClInclude Include="game\battle\battlefsm\fsmstatemaininput.h" />

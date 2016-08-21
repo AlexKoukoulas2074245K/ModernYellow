@@ -1,0 +1,6 @@
+1) On ledge jump finish, wild grass not overlaying player sprite
+2) Implement correct text on sending pokemon to battle, based on the opponent's current hp:
+   70% or more: "Go! PokemonName!"
+   40% or more: "Do it! PokemonName!"
+   10% or more: "Get'm! PokemonName!"
+   else: "The enemy's weak!#Get'm! PokemonName!

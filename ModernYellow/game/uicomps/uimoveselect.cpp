@@ -10,6 +10,7 @@
 #include "../../font.h"
 #include "../../sinputhandler.h"
 #include "../../mixer.h"
+#include "../battle/battlecalcutil.h"
 
 extern pFont_t     g_pFont;
 extern pRenderer_t g_pRenderer;
@@ -28,11 +29,6 @@ static const int32 MOVE_FIRST_MOVE_Y      = 104;
 static const int32 MOVE_SELECTION_ARROW_X = 40;
 static const int32 MOVE_SELECTION_ARROW_Y = 104;
 
-/* ==================
-   Internal Functions
-   ================== */
-static int8 getNumberOfValidMoves(const std::array<std::unique_ptr<Move>, 4>& moves);
-
 /* ==============
    Public Methods
    ============== */
@@ -49,7 +45,7 @@ UIMoveSelect::UIMoveSelect(
 	, m_selectedMove(outMoveSelectedIndex)
 	, m_onCompleteCallback(onCompleteCallback)
 	, m_pressedBack(false)
-	, m_numValidMoves(getNumberOfValidMoves(moves))
+	, m_numValidMoves(battlecalc::getNumberOfValidMoves(moves))
 {
 	
 }
@@ -121,18 +117,4 @@ void UIMoveSelect::render()
 
 		y += (Font::FONT_SIZE / 2) * g_scale;
 	}
-}
-
-/* ===============================
-   Internal Method Implementations
-   =============================== */
-static int8 getNumberOfValidMoves(const std::array<std::unique_ptr<Move>, 4>& moves)
-{
-	for (int i = 0; i < 4; ++i)
-	{
-		if (!moves[i])
-			return i;
-	}
-
-	return 4;
 }

@@ -1,0 +1,40 @@
+/* ======================
+   Date: 21/8/2016
+   Author: Alex Koukoulas
+   ====================== */
+
+#pragma once
+
+#include "fsmstate.h"
+#include "../battlecontroller.h"
+
+class Pokemon;
+class Move;
+class FSMStateCoreTurn: public FSMState
+{
+public:
+	FSMStateCoreTurn(
+		BattleController& battleController, 
+		Pokemon& localPokemon, 
+		Pokemon& opponentPokemon,
+		Move& localPokemonMove,
+		Move& opponentPokemonMove);
+
+	void update() override;
+
+	void render() override;
+
+	std::unique_ptr<FSMState> getSuccessor() const override;
+
+private:
+
+	void showPokemonMoveUsageTextbox(const bool forLocalPokemon);
+
+private:
+
+	Pokemon&   m_localPokemon;
+	Pokemon&   m_opponentPokemon;
+	Move&      m_localPokemonMove;
+	Move&      m_opponentPokemonMove;
+	const bool m_localPokemonIsFaster;
+};

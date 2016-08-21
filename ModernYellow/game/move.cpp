@@ -6,9 +6,30 @@
 #include "move.h"
 #include "../gameinfo.h"
 #include "../jsonutil/json.h"
+
 #include <utility>
+#include <algorithm>
 
 extern pGameInfo_t g_pGameInfo;
+
+/* =============
+   Class Methods
+   ============= */
+bool Move::isTypeSpecial(const std::string& typeName)
+{
+	return std::find(s_specialTypes.begin(), s_specialTypes.end(), typeName) != s_specialTypes.end();
+}
+
+bool Move::isMoveHighCrit(const std::string& moveName)
+{
+	return std::find(s_highCritMoves.begin(), s_highCritMoves.end(), moveName) != s_highCritMoves.end();
+}
+
+/* =====================
+   Private Class Objects
+   ===================== */
+const std::vector<std::string> Move::s_specialTypes = { "WATER", "GRASS", "FIRE", "ICE", "ELECTRIC", "PSYCHIC", "DRAGON" };
+const std::vector<std::string> Move::s_highCritMoves = { "CRABHAMMER", "KARATE_CHOP", "RAZOR_LEAF", "RAZOR_WIND", "SLASH", "SKY_ATTACK" };
 
 /* ==============
    Public Methods

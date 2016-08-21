@@ -18,6 +18,7 @@
 #include "strutils.h"
 #include "font.h"
 #include "gameinfo.h"
+#include "jsonutil/json.h"
 
 #include <SDL.h>
 #include <SDL_image.h>

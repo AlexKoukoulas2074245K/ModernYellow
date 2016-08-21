@@ -4,12 +4,13 @@
    ====================== */
 
 #include "fsmstatemaininput.h"
-#include "fsmstatedarkintro.h"
+#include "fsmstatecoreturn.h"
 #include "../../../font.h"
 #include "../../../sinputhandler.h"
 #include "../../uicomps/uimoveselect.h"
 #include "../../pokemon.h"
 #include "../../../mixer.h"
+#include "../battlecalcutil.h"
 
 #include <unordered_map>
 #include <array>
@@ -82,7 +83,17 @@ void FSMStateMainInput::render()
 
 std::unique_ptr<FSMState> FSMStateMainInput::getSuccessor() const
 {
-	return std::make_unique<FSMStateDarkIntro>(m_battleController);
+	auto aiOpponenMoveIndex = battlecalc::calculateOpponentMoveIndex(
+		m_battleController.getActiveLocalPokemon(),
+		m_battleController.getActiveEnemyPokemon(),
+		m_battleController.isWildBattle());
+
+	return std::make_unique<FSMStateCoreTurn>(
+		m_battleController, 
+		m_battleController.getActiveLocalPokemon(),
+		m_battleController.getActiveEnemyPokemon(),
+		*m_battleController.getActiveLocalPokemon().getMoveSet()[m_currMoveSelectedIndex],
+		*m_battleController.getActiveEnemyPokemon().getMoveSet()[aiOpponenMoveIndex]);
 }
 
 /* ===============

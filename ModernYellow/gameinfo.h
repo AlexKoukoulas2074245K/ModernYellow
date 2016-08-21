@@ -19,9 +19,10 @@ public:
 
     bool isReady() const;
 
-    const Json::Value& getPokemonInfo(const std::string& name);
-	const Json::Value& getItemInfo(const std::string& name);
-	const Json::Value& getMoveInfo(const std::string& name);
+    const Json::Value& getPokemonInfo(const std::string& name) const;
+	const Json::Value& getItemInfo(const std::string& name) const;
+	const Json::Value& getMoveInfo(const std::string& name) const;
+	const Json::Value& getTypeEffectiveness(const std::string& type) const;
 
 private:
 

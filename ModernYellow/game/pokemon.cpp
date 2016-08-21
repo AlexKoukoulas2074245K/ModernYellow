@@ -62,6 +62,11 @@ const std::string& Pokemon::getID() const
     return m_id;
 }
 
+const std::vector<std::string>& Pokemon::getType() const
+{
+	return m_type;
+}
+
 Pokemon::Status Pokemon::getStatus() const
 {
     return m_status;
@@ -80,6 +85,11 @@ int16 Pokemon::getCurrHp() const
 int16 Pokemon::getStat(const Stat& stat) const
 {
     return m_currStats[stat];
+}
+
+int16 Pokemon::getBaseStat(const Stat& stat) const
+{
+	return m_baseStats[stat];
 }
 
 bool Pokemon::hasFainted() const

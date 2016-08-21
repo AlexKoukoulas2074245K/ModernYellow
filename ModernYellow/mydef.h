@@ -87,3 +87,4 @@ enum BattleType
 {
     BT_TRAINER, BT_ENCOUNTER
 };
+
