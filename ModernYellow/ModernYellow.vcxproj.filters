@@ -230,5 +230,8 @@
     <ClInclude Include="game\battle\battlecalcutil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="game\battle\shakegenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

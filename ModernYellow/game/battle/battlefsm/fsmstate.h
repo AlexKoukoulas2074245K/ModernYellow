@@ -29,6 +29,9 @@ public:
     
     bool isFinished() const;
 
+	int32 getShakeXoffset() const;
+	int32 getShakeYoffset() const;
+
 protected:
 
     void renderLocalPokemonStats();
@@ -45,6 +48,8 @@ protected:
     void renderOpponentPokemonName();
     void renderOpponentPokemonLevel();
     void renderAllDefaultOpponentSceneObjects();
+
+	void setShakeOffset(const int32 xOffset, const int32 yOffset);
 
 protected:
 
@@ -83,5 +88,10 @@ protected:
 
 	BattleController& m_battleController;
     bool m_finished;
+
+private:
+
+	int32 m_shakeXoffset;
+	int32 m_shakeYoffset;
 
 };

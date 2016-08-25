@@ -77,7 +77,7 @@ int32 battlecalc::calculateDamage(
 	const auto randVar = ((std::rand() % 16) + 85.0f) / 100.0f;
 	const auto finalModifier = randVar * (isCrit ? 2.0f : 1.0f) * typeEff * (isStab ? 1.5f : 1.0f);
 
-	return static_cast<int32>(mainFactor * finalModifier);
+	return std::max(static_cast<int32>(mainFactor * finalModifier), 1);
 }
 
 bool battlecalc::calculateWhetherCriticalHit(

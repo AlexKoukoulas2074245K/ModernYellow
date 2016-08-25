@@ -10,7 +10,7 @@
 #include "../../uicomps/uitextbox.h"
 
 #include <SDL_log.h>
-
+#include <SDL_timer.h>
 /* ==============
    Public Methods
    ============== */
@@ -31,19 +31,37 @@ FSMStateCoreTurn::FSMStateCoreTurn(
 		opponentPokemon, 
 		localPokemonMove, 
 		opponentPokemonMove))
+	, m_innerState(IS_MOVE_USAGE)
 {
 	showPokemonMoveUsageTextbox(m_localPokemonIsFaster);
 }
 
 void FSMStateCoreTurn::update()
 {
-	if (!m_battleController.getUIComponentStack().top()->isFinished())
+	switch (m_innerState)
 	{
-		m_battleController.getUIComponentStack().top()->update();
-		if (m_battleController.getUIComponentStack().top()->isFinished())
+		case IS_MOVE_USAGE: 
 		{
-			SDL_Log(std::to_string(battlecalc::calculateDamage(m_localPokemon, m_opponentPokemon, m_localPokemonMove)).c_str());
-		}
+			
+			m_battleController.getUIComponentStack().top()->update();
+			if (m_battleController.getUIComponentStack().top()->isFinished())
+				m_innerState = IS_MOVE_ANIMATION;
+		} break;
+	
+		case IS_MOVE_ANIMATION:
+		{
+			m_innerState = IS_MOVE_SHAKE;
+		} break;
+
+		case IS_MOVE_SHAKE:
+		{		
+			setShakeOffset(x, 0);
+			m_battleController.getUIComponentStack().top()->setShakeOffset(x, 0);
+		} break;
+
+		case IS_HP_REDUCTION:
+		{
+		} break;
 	}
 }
 

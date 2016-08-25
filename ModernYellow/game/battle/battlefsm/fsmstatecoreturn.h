@@ -28,6 +28,14 @@ public:
 
 private:
 
+	enum InnerState
+	{
+		IS_MOVE_USAGE,
+		IS_MOVE_ANIMATION,
+		IS_MOVE_SHAKE,
+		IS_HP_REDUCTION
+	};
+
 	void showPokemonMoveUsageTextbox(const bool forLocalPokemon);
 
 private:
@@ -37,4 +45,5 @@ private:
 	Move&      m_localPokemonMove;
 	Move&      m_opponentPokemonMove;
 	const bool m_localPokemonIsFaster;
+	InnerState m_innerState;
 };

@@ -62,8 +62,8 @@ void BattleController::render()
     SDLRender(
         g_pRenderer, 
         m_textboxTexture->getTexture().get(),
-        0,
-        g_height - m_textboxTexture->getScaledHeight(),
+        m_activeState->getShakeXoffset() * g_scale,
+        g_height - m_textboxTexture->getScaledHeight() + m_activeState->getShakeYoffset() * g_scale,
         m_textboxTexture->getScaledWidth(),
         m_textboxTexture->getScaledHeight());
     

@@ -17,10 +17,12 @@ extern uint32 g_scale;
    Public Methods
    ============== */
 
-FSMState::FSMState(BattleController& battleController):
+FSMState::FSMState(BattleController& battleController)
 
-	m_battleController(battleController),
-    m_finished(false)
+	: m_battleController(battleController)
+    , m_finished(false)
+	, m_shakeXoffset(0)
+	, m_shakeYoffset(0)
 {
 }
 
@@ -29,6 +31,16 @@ FSMState::~FSMState(){}
 bool FSMState::isFinished() const 
 {
     return m_finished;
+}
+
+int32 FSMState::getShakeXoffset() const
+{
+	return m_shakeXoffset;
+}
+
+int32 FSMState::getShakeYoffset() const
+{
+	return m_shakeYoffset;
 }
 
 /* =================
@@ -41,8 +53,8 @@ void FSMState::renderLocalPokemonStats()
     SDLRender(
         g_pRenderer,
         m_battleController.getLocalPokemonStatsTexture()->getTexture().get(),
-        LOCAL_POKEMON_STATS_X * g_scale,
-        LOCAL_POKEMON_STATS_Y * g_scale,                
+        LOCAL_POKEMON_STATS_X * g_scale + m_shakeXoffset * g_scale,
+        LOCAL_POKEMON_STATS_Y * g_scale + m_shakeYoffset * g_scale,                
 		m_battleController.getLocalPokemonStatsTexture()->getScaledWidth(),
 		m_battleController.getLocalPokemonStatsTexture()->getScaledHeight());
 }
@@ -66,8 +78,8 @@ void FSMState::renderLocalPokemonHpBar(const float percentDepleted)
 
     SDL_Rect hpArea = 
     { 
-        static_cast<int32>(LOCAL_POKEMON_HP_BAR_X * g_scale), 
-        static_cast<int32>(LOCAL_POKEMON_HP_BAR_Y * g_scale),
+        static_cast<int32>(LOCAL_POKEMON_HP_BAR_X * g_scale + m_shakeXoffset * g_scale), 
+        static_cast<int32>(LOCAL_POKEMON_HP_BAR_Y * g_scale + m_shakeYoffset * g_scale),
         static_cast<int32>((remainingPercent * POKEMON_BAR_WIDTH) * g_scale),
         static_cast<int32>(POKEMON_BAR_HEIGHT * g_scale)
     };
@@ -80,20 +92,26 @@ void FSMState::renderLocalActor(const std::shared_ptr<TextureResource>& resource
     SDLRender(
         g_pRenderer,
         resource->getTexture().get(),
-        LOCAL_ACTOR_X * g_scale,
-        LOCAL_ACTOR_Y * g_scale,
+        LOCAL_ACTOR_X * g_scale + m_shakeXoffset * g_scale,
+        LOCAL_ACTOR_Y * g_scale + m_shakeYoffset * g_scale,
         resource->getScaledWidth(),
         resource->getScaledHeight());
 }
 
 void FSMState::renderLocalPokemonName()
 {
-    g_pFont->renderString(m_battleController.getActiveLocalPokemon().getName(), LOCAL_POKEMON_NAME_X * g_scale, LOCAL_POKEMON_NAME_Y * g_scale);
+    g_pFont->renderString(
+		m_battleController.getActiveLocalPokemon().getName(), 
+		LOCAL_POKEMON_NAME_X * g_scale + m_shakeXoffset * g_scale, 
+		LOCAL_POKEMON_NAME_Y * g_scale + m_shakeYoffset * g_scale);
 }
 
 void FSMState::renderLocalPokemonLevel()
 {
-    g_pFont->renderString(std::to_string(m_battleController.getActiveLocalPokemon().getLevel()), LOCAL_POKEMON_LEVEL_X * g_scale, LOCAL_POKEMON_LEVEL_Y * g_scale);
+    g_pFont->renderString(
+		std::to_string(m_battleController.getActiveLocalPokemon().getLevel()),
+		LOCAL_POKEMON_LEVEL_X * g_scale + m_shakeXoffset * g_scale, 
+		LOCAL_POKEMON_LEVEL_Y * g_scale + m_shakeYoffset * g_scale);
 }
 
 void FSMState::renderLocalPokemonCurrentAndMaxHP()
@@ -103,16 +121,16 @@ void FSMState::renderLocalPokemonCurrentAndMaxHP()
     for (int32 i = lastCharIndex; i >= 0; --i)
         g_pFont->renderString(
             std::string(1, currHpString[i]),
-            LOCAL_POKEMON_CURR_HP_X * g_scale - (lastCharIndex - i) * DEFAULT_BLOCK_SIZE * g_scale,
-            LOCAL_POKEMON_CURR_HP_Y * g_scale);
+            LOCAL_POKEMON_CURR_HP_X * g_scale - (lastCharIndex - i) * DEFAULT_BLOCK_SIZE * g_scale + m_shakeXoffset * g_scale,
+            LOCAL_POKEMON_CURR_HP_Y * g_scale + m_shakeYoffset * g_scale);
     
     const auto maxHpString = std::to_string(m_battleController.getActiveLocalPokemon().getStat(Pokemon::S_HP));
     lastCharIndex = maxHpString.size() - 1;
     for (int32 i = lastCharIndex; i >= 0; --i)
         g_pFont->renderString(
             std::string(1, maxHpString[i]),
-            LOCAL_POKEMON_MAX_HP_X * g_scale - (lastCharIndex - i) * DEFAULT_BLOCK_SIZE * g_scale,
-            LOCAL_POKEMON_MAX_HP_Y * g_scale);
+            LOCAL_POKEMON_MAX_HP_X * g_scale - (lastCharIndex - i) * DEFAULT_BLOCK_SIZE * g_scale + m_shakeXoffset * g_scale,
+            LOCAL_POKEMON_MAX_HP_Y * g_scale + m_shakeYoffset * g_scale);
 }
 
 void FSMState::renderAllDefaultLocalSceneObjects()
@@ -131,8 +149,8 @@ void FSMState::renderOpponentPokemonStats()
     SDLRender(
         g_pRenderer,
         m_battleController.getEnemyPokemonStatsTexture()->getTexture().get(),
-        OPPONENT_POKEMON_STATS_X * g_scale,
-        OPPONENT_POKEMON_STATS_Y * g_scale,
+        OPPONENT_POKEMON_STATS_X * g_scale + m_shakeXoffset * g_scale,
+        OPPONENT_POKEMON_STATS_Y * g_scale + m_shakeYoffset * g_scale,
         m_battleController.getEnemyPokemonStatsTexture()->getScaledWidth(),
         m_battleController.getEnemyPokemonStatsTexture()->getScaledHeight());
 }
@@ -156,8 +174,8 @@ void FSMState::renderOpponentPokemonHpBar(const float percentDepleted)
 
     SDL_Rect hpArea =
     {
-        static_cast<int32>(OPPONENT_POKEMON_HP_BAR_X * g_scale),
-        static_cast<int32>(OPPONENT_POKEMON_HP_BAR_Y * g_scale),
+        static_cast<int32>(OPPONENT_POKEMON_HP_BAR_X * g_scale + m_shakeXoffset * g_scale),
+        static_cast<int32>(OPPONENT_POKEMON_HP_BAR_Y * g_scale + m_shakeYoffset * g_scale),
         static_cast<int32>((remainingPercent * POKEMON_BAR_WIDTH) * g_scale),
         static_cast<int32>(POKEMON_BAR_HEIGHT * g_scale)
     };
@@ -167,12 +185,18 @@ void FSMState::renderOpponentPokemonHpBar(const float percentDepleted)
 
 void FSMState::renderOpponentPokemonName()
 {
-    g_pFont->renderString(m_battleController.getActiveEnemyPokemon().getName(), OPPONENT_POKEMON_NAME_X * g_scale, OPPONENT_POKEMON_NAME_Y * g_scale);
+    g_pFont->renderString(
+		m_battleController.getActiveEnemyPokemon().getName(),
+		OPPONENT_POKEMON_NAME_X * g_scale + m_shakeXoffset * g_scale, 
+		OPPONENT_POKEMON_NAME_Y * g_scale + m_shakeYoffset * g_scale);
 }
 
 void FSMState::renderOpponentPokemonLevel()
 {
-    g_pFont->renderString(std::to_string(m_battleController.getActiveEnemyPokemon().getLevel()), OPPONENT_POKEMON_LEVEL_X * g_scale, OPPONENT_POKEMON_LEVEL_Y * g_scale);
+    g_pFont->renderString(
+		std::to_string(m_battleController.getActiveEnemyPokemon().getLevel()), 
+		OPPONENT_POKEMON_LEVEL_X * g_scale + m_shakeXoffset * g_scale,
+		OPPONENT_POKEMON_LEVEL_Y * g_scale + m_shakeYoffset * g_scale);
 }
 
 void FSMState::renderOpponentActor(const std::shared_ptr<TextureResource>& resource)
@@ -180,8 +204,8 @@ void FSMState::renderOpponentActor(const std::shared_ptr<TextureResource>& resou
     SDLRender(
         g_pRenderer,
         resource->getTexture().get(),
-        OPPONENT_ACTOR_X * g_scale,
-        OPPONENT_ACTOR_Y * g_scale,
+        OPPONENT_ACTOR_X * g_scale + m_shakeXoffset * g_scale,
+        OPPONENT_ACTOR_Y * g_scale + m_shakeYoffset * g_scale,
         resource->getScaledWidth(),
         resource->getScaledHeight());
 }
@@ -193,4 +217,10 @@ void FSMState::renderAllDefaultOpponentSceneObjects()
 	renderOpponentActor(m_battleController.getEnemyPokemonActorTexture(m_battleController.getActiveEnemyPokemon().getName()));
     renderOpponentPokemonLevel();
     renderOpponentPokemonName();
+}
+
+void FSMState::setShakeOffset(const int32 xOffset, const int32 yOffset)
+{
+	m_shakeXoffset = xOffset;
+	m_shakeYoffset = yOffset;
 }

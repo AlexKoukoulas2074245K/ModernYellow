@@ -215,10 +215,10 @@ void UITextbox::render()
 {    
     UIComponent::render();
 
-    g_pFont->renderString(m_rendTopSentence, UITB_TOP_SENTENCE_X * g_scale, UITB_TOP_SENTENCE_Y * g_scale);          
-    g_pFont->renderString(m_rendBotSentence, UITB_BOT_SENTENCE_X * g_scale, UITB_BOT_SENTENCE_Y * g_scale);      
-    if (m_arrowPrompt) g_pFont->renderString("|", UITB_PROMPT_ARROW_X * g_scale, UITB_PROMPT_ARROW_Y * g_scale);
-    if (m_bool) m_bool->render();    
+    g_pFont->renderString(m_rendTopSentence, UITB_TOP_SENTENCE_X * g_scale + m_shakeXoffset * g_scale, UITB_TOP_SENTENCE_Y * g_scale + m_shakeYoffset * g_scale);          
+    g_pFont->renderString(m_rendBotSentence, UITB_BOT_SENTENCE_X * g_scale + m_shakeXoffset * g_scale, UITB_BOT_SENTENCE_Y * g_scale + m_shakeYoffset * g_scale);      
+    if (m_arrowPrompt) g_pFont->renderString("|", UITB_PROMPT_ARROW_X * g_scale + m_shakeXoffset * g_scale, UITB_PROMPT_ARROW_Y * g_scale + m_shakeYoffset * g_scale);
+    if (m_bool) m_bool->render();
 }
 
 /* ===============
