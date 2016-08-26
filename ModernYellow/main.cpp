@@ -3,10 +3,6 @@
    Author: Alex Koukoulas
    ====================== */
 
-#define SHOW_LEAKS
-#if (defined(_DEBUG) || defined(DEBUG)) || defined(SHOW_LEAKS)
-#include "vld.h"
-#endif
 
 #include "portcommon.h"
 #include "gstates/gsplay.h"

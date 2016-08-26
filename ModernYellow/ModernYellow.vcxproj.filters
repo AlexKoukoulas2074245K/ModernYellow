@@ -117,6 +117,9 @@
     <ClCompile Include="game\battle\battlecalcutil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="game\battle\shakegenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mydef.h">

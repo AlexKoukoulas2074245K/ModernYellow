@@ -10,6 +10,7 @@
 
 class Pokemon;
 class Move;
+class ShakeGenerator;
 class FSMStateCoreTurn: public FSMState
 {
 public:
@@ -40,10 +41,11 @@ private:
 
 private:
 
-	Pokemon&   m_localPokemon;
-	Pokemon&   m_opponentPokemon;
-	Move&      m_localPokemonMove;
-	Move&      m_opponentPokemonMove;
-	const bool m_localPokemonIsFaster;
-	InnerState m_innerState;
+	Pokemon&                        m_localPokemon;
+	Pokemon&                        m_opponentPokemon;
+	Move&                           m_localPokemonMove;
+	Move&                           m_opponentPokemonMove;
+	const bool                      m_localPokemonIsFaster;
+	InnerState                      m_innerState;
+	std::unique_ptr<ShakeGenerator> m_shakeGenerator;
 };

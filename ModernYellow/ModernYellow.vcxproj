@@ -83,6 +83,7 @@
     <ClCompile Include="game\battle\battlefsm\fsmstatedarkintro.cpp" />
     <ClCompile Include="game\battle\battlefsm\fsmstateintro.cpp" />
     <ClCompile Include="game\battle\battlefsm\fsmstatemaininput.cpp" />
+    <ClCompile Include="game\battle\shakegenerator.cpp" />
     <ClCompile Include="game\encounteranimationcontroller.cpp" />
     <ClCompile Include="game\level.cpp" />
     <ClCompile Include="game\move.cpp" />

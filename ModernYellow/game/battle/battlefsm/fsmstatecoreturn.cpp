@@ -8,6 +8,7 @@
 #include "../../move.h"
 #include "../battlecalcutil.h"
 #include "../../uicomps/uitextbox.h"
+#include "../shakegenerator.h"
 
 #include <SDL_log.h>
 #include <SDL_timer.h>
@@ -15,7 +16,7 @@
    Public Methods
    ============== */
 FSMStateCoreTurn::FSMStateCoreTurn(
-	BattleController& battleController, 
+	BattleController& battleController,
 	Pokemon& localPokemon,
 	Pokemon& opponentPokemon,
 	Move& localPokemonMove,
@@ -26,12 +27,14 @@ FSMStateCoreTurn::FSMStateCoreTurn(
 	, m_opponentPokemon(opponentPokemon)
 	, m_localPokemonMove(localPokemonMove)
 	, m_opponentPokemonMove(opponentPokemonMove)
-	, m_localPokemonIsFaster(battlecalc::isLocalPokemonOppening(
+	/* , m_localPokemonIsFaster(battlecalc::isLocalPokemonOppening(
 		localPokemon, 
 		opponentPokemon, 
 		localPokemonMove, 
-		opponentPokemonMove))
+		opponentPokemonMove)) */
+	, m_localPokemonIsFaster(false)
 	, m_innerState(IS_MOVE_USAGE)
+	, m_shakeGenerator(nullptr)
 {
 	showPokemonMoveUsageTextbox(m_localPokemonIsFaster);
 }
@@ -51,12 +54,19 @@ void FSMStateCoreTurn::update()
 		case IS_MOVE_ANIMATION:
 		{
 			m_innerState = IS_MOVE_SHAKE;
+			m_shakeGenerator = std::make_unique<ShakeGenerator>(
+				m_localPokemonIsFaster ? m_localPokemonMove : m_opponentPokemonMove, 
+				m_localPokemonIsFaster);
 		} break;
 
 		case IS_MOVE_SHAKE:
 		{		
-			setShakeOffset(x, 0);
-			m_battleController.getUIComponentStack().top()->setShakeOffset(x, 0);
+			const auto& offset = m_shakeGenerator->updateAndRetrieveOffset();
+			setShakeOffset(offset.first, offset.second);
+			m_battleController.getUIComponentStack().top()->setShakeOffset(offset.first, offset.second);
+
+			if (m_shakeGenerator->isFinished())
+				m_innerState = IS_HP_REDUCTION;
 		} break;
 
 		case IS_HP_REDUCTION:
